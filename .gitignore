@@ -1,0 +1,11 @@
+# Ignore everything ...
+*
+# ... but these file types
+!.gitignore
+!.m
+!.txt
+
+# ...even if they are in subdirectories
+!*/
+
+# specific files
