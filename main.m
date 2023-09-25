@@ -5,6 +5,7 @@ clc;
 %% DIRECTORY STUFF
 [MAIN_DIRECTORY,~,~] = fileparts(matlab.desktop.editor.getActiveFilename);
 
+% download: https://drive.google.com/drive/folders/1EWlkqu3qofB5kB5QLcPkrFyJxFm2zBec?usp=sharing
 DATA_DIRECTORY = fullfile(MAIN_DIRECTORY, '_data');
 DTM_DIRECOTRY  = fullfile(DATA_DIRECTORY, 'ExportDMR');
 PC_DIRECTORY   = fullfile(DATA_DIRECTORY, 'ExportMB');
