@@ -2,8 +2,8 @@
 *
 # ... but these file types
 !.gitignore
-!.m
-!.txt
+!*.m
+!*.txt
 
 # ...even if they are in subdirectories
 !*/
