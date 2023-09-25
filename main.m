@@ -90,6 +90,19 @@ ground.Location = [x, y, z];
 
 pcshow(ground.Location, COLOR_MED_VEG)
 
+%%
+handle = dataHandler(heightMatrix, rasterReference, ptCloud, ptAttributes);
+handle = handle.meshPlane();
+handle = handle.computePointCloudAttributes();
+handle = handle.normalizePtCloud();
+
+figure
+handle.plotPtCloud3D(colorData, [3, 4, 5],"useData","normalized")
+
+
+
+
+
 
 
 
