@@ -76,30 +76,75 @@ end
 hold off
 
 %% POINTS SELECTION
-ground = struct;
-
-x = []; y = []; z = [];
-
-for i = 1:lasCount
-	x = [x; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 1)];
-	y = [y; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 2)];
-	z = [z; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 3)];
-
-end
-
-ground.Location = [x, y, z];
-
-pcshow(ground.Location, COLOR_MED_VEG)
+% ground = struct;
+% 
+% x = []; y = []; z = [];
+% 
+% for i = 1:lasCount
+% 	x = [x; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 1)];
+% 	y = [y; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 2)];
+% 	z = [z; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 3)];
+% 
+% end
+% 
+% ground.Location = [x, y, z];
+% 
+% pcshow(ground.Location, COLOR_MED_VEG)
 
 %%
+cd(MAIN_DIRECTORY);
+
 handle = dataHandler(heightMatrix, rasterReference, ptCloud, ptAttributes);
 handle = handle.meshPlane();
 handle = handle.computePointCloudAttributes();
-handle = handle.normalizePtCloud();
+handle = handle.normalizePtCloud("method","DTM");
 
+%%
+handle = handle.computeRaster_Hmax();
+
+%%
+handle = handle.computeRaster_Hmean();
+
+%%
+handle = handle.computeRaster_Hmedian();
+
+%%
+handle = handle.computeRaster_Hp25();
+
+handle = handle.computeRaster_Hp75();
+
+handle = handle.computeRaster_Hp95();
+
+%%
+figure
+handle.plotTerrain()
+hold on
+% handle.plotPtCloud2D(colorData, [5]);
+handle.plotMesh("LineWidth", 0.5);
+hold off
+
+%%
+figure
+handle.plotPtCloud3D(colorData, [3, 4, 5],"useData","original")
+
+%%
 figure
 handle.plotPtCloud3D(colorData, [3, 4, 5],"useData","normalized")
 
+%%
+figure
+imagesc([handle.x1 handle.x2], [handle.y1 handle.y2], handle.statRasters.Hmax,...
+					'AlphaData', handle.alphaData_DTM)
+title 'Max height in pixels'
+% title 'Mean height in pixels'
+% title 'Median height in pixels'
+% title 'Percentile 25 height in pixels'
+% title 'Percentile 75 height in pixels'
+% title 'Percentile 95 height in pixels'
+colormap jet
+colorbar
+axis equal
+axis xy
 
 
 
