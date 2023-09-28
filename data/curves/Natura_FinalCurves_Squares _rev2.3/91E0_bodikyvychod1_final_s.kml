@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_bodikyvychod1_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.504007742603,47.895133180480,0
+					17.505344316713,47.895104008747,0
+					17.505300929558,47.894205134600,0
+					17.503964378536,47.894234305419,0
+					17.504007742603,47.895133180480,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

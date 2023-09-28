@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_nadZamkom_hore_Smolenice_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.420026448129,48.518589450104,0
+					17.421379428584,48.518560983332,0
+					17.421336567717,48.517662150350,0
+					17.419983611155,48.517690616229,0
+					17.420026448129,48.518589450104,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

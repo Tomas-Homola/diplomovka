@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_PiesokChatovaHore_ModraPiesok_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.260706165719,48.380392395697,0
+					17.262055633606,48.380365857653,0
+					17.262015785195,48.379466900639,0
+					17.260666341031,48.379493437851,0
+					17.260706165719,48.380392395697,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

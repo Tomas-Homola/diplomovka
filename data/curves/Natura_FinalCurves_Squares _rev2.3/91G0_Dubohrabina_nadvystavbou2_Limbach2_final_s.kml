@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_nadvystavbou2_Limbach2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.206971597185,48.296500546427,0
+					17.208318902175,48.296474672024,0
+					17.208280114257,48.295575668889,0
+					17.206932832884,48.295601542480,0
+					17.206971597185,48.296500546427,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_karloveske_rameno2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.059612966706,48.146097913210,0
+					17.060956459654,48.146073821092,0
+					17.060920449363,48.145174708027,0
+					17.059576979849,48.145198799389,0
+					17.059612966706,48.146097913210,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

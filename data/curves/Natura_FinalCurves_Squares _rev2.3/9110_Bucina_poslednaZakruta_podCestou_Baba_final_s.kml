@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_poslednaZakruta_podCestou_Baba_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.193058418445,48.352550907137,0
+					17.194407213043,48.352525173564,0
+					17.194368593486,48.351626170828,0
+					17.193019822579,48.351651903592,0
+					17.193058418445,48.352550907137,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

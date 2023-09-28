@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_NestichLosonec_Smolenice_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.406587845402,48.489360004831,0
+					17.407940061505,48.489331708632,0
+					17.407897482109,48.488432862164,0
+					17.406545289861,48.488461157474,0
+					17.406587845402,48.489360004831,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

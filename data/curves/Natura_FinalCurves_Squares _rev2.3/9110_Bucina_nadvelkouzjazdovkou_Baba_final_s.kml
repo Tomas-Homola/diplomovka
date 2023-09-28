@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_nadvelkouzjazdovkou_Baba_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.195747182915,48.342872369721,0
+					17.197095719715,48.342846608452,0
+					17.197057065994,48.341947605816,0
+					17.195708552873,48.341973366276,0
+					17.195747182915,48.342872369721,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_bodikyoprotibudke_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.465256385135,47.901820997040,0
+					17.466593170687,47.901792273364,0
+					17.466550444194,47.900893373839,0
+					17.465213681740,47.900922096615,0
+					17.465256385135,47.901820997040,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

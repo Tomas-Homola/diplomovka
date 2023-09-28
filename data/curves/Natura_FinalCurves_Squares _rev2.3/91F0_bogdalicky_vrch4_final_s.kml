@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_bogdalicky_vrch4_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					16.899785543660,48.408514128748,0
+					16.901136064949,48.408491814910,0
+					16.901102538882,48.407592656200,0
+					16.899752041375,48.407614969338,0
+					16.899785543660,48.408514128748,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

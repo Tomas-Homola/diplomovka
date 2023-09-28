@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_brestovany3_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.713766155520,48.388857010109,0
+					17.715115382871,48.388825154758,0
+					17.715067544607,48.387926508361,0
+					17.713718340957,48.387958362711,0
+					17.713766155520,48.388857010109,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

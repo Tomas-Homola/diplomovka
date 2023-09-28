@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_Jahodnik_podcestou_Smolenice_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.406343883129,48.492784110021,0
+					17.407696190520,48.492755815208,0
+					17.407653610315,48.491856969116,0
+					17.406301326784,48.491885263040,0
+					17.406343883129,48.492784110021,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

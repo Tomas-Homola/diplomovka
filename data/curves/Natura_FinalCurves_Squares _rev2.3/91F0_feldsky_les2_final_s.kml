@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_feldsky_les2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					16.909116627276,48.387036392865,0
+					16.910466572887,48.387013976890,0
+					16.910432907725,48.386114819687,0
+					16.909082985867,48.386137234958,0
+					16.909116627276,48.387036392865,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_nadCeresnovouLukou_zapad_Limbach_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.198295578755,48.301705370910,0
+					17.199373538759,48.301684752308,0
+					17.199342628258,48.300965546140,0
+					17.198264683374,48.300986164224,0
+					17.198295578755,48.301705370910,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

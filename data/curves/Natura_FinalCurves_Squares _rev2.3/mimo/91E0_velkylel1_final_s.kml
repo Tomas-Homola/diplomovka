@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_velkylel1_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.950570979355,47.755028447683,0
+					17.951903465909,47.754994154339,0
+					17.951852601785,47.754095592451,0
+					17.950520138110,47.754129884721,0
+					17.950570979355,47.755028447683,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

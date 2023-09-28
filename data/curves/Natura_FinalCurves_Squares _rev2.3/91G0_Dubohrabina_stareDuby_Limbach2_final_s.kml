@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_stareDuby_Limbach2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.205740523751,48.299223418348,0
+					17.207087901506,48.299197557283,0
+					17.207049131496,48.298298553829,0
+					17.205701777363,48.298324414082,0
+					17.205740523751,48.299223418348,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

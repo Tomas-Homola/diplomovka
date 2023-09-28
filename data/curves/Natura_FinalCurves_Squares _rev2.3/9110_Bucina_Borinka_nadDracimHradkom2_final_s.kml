@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_Borinka_nadDracimHradkom2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.104213149663,48.260188295817,0
+					17.105559591249,48.260163639013,0
+					17.105522654490,48.259264569366,0
+					17.104176236481,48.259289225397,0
+					17.104213149663,48.260188295817,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

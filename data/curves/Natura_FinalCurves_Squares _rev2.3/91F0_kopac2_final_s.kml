@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_kopac2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.165561335499,48.085484726869,0
+					17.166903157498,48.085459420168,0
+					17.166865377262,48.084560359025,0
+					17.165523578615,48.084585664932,0
+					17.165561335499,48.085484726869,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

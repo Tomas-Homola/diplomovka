@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_smeromNaSenkarku_Limbach_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.194076238574,48.303945369981,0
+					17.195423751159,48.303919643696,0
+					17.195385179554,48.303020633940,0
+					17.194037690597,48.303046359417,0
+					17.194076238574,48.303945369981,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

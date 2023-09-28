@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_NadLosoncom_Losonec2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.401575461770,48.486405647154,0
+					17.402927604306,48.486377411113,0
+					17.402885117900,48.485478560874,0
+					17.401532999215,48.485506796028,0
+					17.401575461770,48.486405647154,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_ParkoviskoNaBielyKriz_Zapad_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.148551750226,48.224997534989,0
+					17.149628134072,48.224977406409,0
+					17.149598003551,48.224258166862,0
+					17.148521634764,48.224278294936,0
+					17.148551750226,48.224997534989,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

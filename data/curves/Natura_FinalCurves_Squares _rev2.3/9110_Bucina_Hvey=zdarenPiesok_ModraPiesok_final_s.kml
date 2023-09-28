@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_Hvey=zdarenPiesok_ModraPiesok_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.268094460379,48.373408869311,0
+					17.268904026482,48.373392898098,0
+					17.268880050721,48.372853525807,0
+					17.268070493154,48.372869496719,0
+					17.268094460379,48.373408869311,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

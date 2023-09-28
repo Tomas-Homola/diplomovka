@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_Peknacesta_dole_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.127576219998,48.199744774654,0
+					17.128383122202,48.199729832263,0
+					17.128360767238,48.199190392751,0
+					17.127553873494,48.199205334862,0
+					17.127576219998,48.199744774654,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

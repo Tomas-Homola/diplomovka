@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_PBielyKriz_S_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.149826717251,48.226503273185,0
+					17.151172235214,48.226478095383,0
+					17.151134543223,48.225579047079,0
+					17.149789048792,48.225604224092,0
+					17.149826717251,48.226503273185,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

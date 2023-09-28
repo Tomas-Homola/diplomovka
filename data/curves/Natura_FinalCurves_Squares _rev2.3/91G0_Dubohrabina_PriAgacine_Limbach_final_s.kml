@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_PriAgacine_Limbach_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.213875319108,48.300236714305,0
+					17.214683757552,48.300221142136,0
+					17.214660414460,48.299681742945,0
+					17.213851984520,48.299697314820,0
+					17.213875319108,48.300236714305,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

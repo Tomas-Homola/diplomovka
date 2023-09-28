@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_sihot1_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.032895486949,48.150442711787,0
+					17.034239115727,48.150418930362,0
+					17.034203566647,48.149519802970,0
+					17.032859961310,48.149543583649,0
+					17.032895486949,48.150442711787,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

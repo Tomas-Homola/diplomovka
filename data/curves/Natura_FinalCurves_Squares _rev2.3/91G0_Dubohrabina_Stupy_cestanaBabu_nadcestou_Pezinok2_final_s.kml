@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_Stupy_cestanaBabu_nadcestou_Pezinok2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.239115630934,48.322331534221,0
+					17.240463586633,48.322305272839,0
+					17.240424198719,48.321406293376,0
+					17.239076266668,48.321432553933,0
+					17.239115630934,48.322331534221,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

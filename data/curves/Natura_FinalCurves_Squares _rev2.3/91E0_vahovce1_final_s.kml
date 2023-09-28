@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_vahovce1_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.777825648716,48.262706235741,0
+					17.778633148108,48.262686711591,0
+					17.778603903607,48.262147540614,0
+					17.777796412687,48.262167064396,0
+					17.777825648716,48.262706235741,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

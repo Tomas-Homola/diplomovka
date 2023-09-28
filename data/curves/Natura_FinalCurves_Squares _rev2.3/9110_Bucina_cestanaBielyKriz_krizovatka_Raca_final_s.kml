@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_cestanaBielyKriz_krizovatka_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.142977721444,48.236618442623,0
+					17.143785195190,48.236603383572,0
+					17.143762649393,48.236063952952,0
+					17.142955184124,48.236079011720,0
+					17.142977721444,48.236618442623,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

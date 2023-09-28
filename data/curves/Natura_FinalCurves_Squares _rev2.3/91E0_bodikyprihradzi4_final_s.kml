@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_bodikyprihradzi4_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.470563989999,47.903686459385,0
+					17.471900818233,47.903657673085,0
+					17.471857997060,47.902758777449,0
+					17.470521191926,47.902787562847,0
+					17.470563989999,47.903686459385,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

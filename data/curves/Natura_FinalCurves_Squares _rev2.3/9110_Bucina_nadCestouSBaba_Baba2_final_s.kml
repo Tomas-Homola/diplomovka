@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_nadCestouSBaba_Baba2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.212812941468,48.353612014351,0
+					17.214161746150,48.353586048740,0
+					17.214122777653,48.352687058116,0
+					17.212773996661,48.352713022912,0
+					17.212812941468,48.353612014351,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_PnadKupaliskomHore_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.135279774957,48.219936349818,0
+					17.136625133626,48.219911344784,0
+					17.136587705026,48.219012286892,0
+					17.135242369881,48.219037291142,0
+					17.135279774957,48.219936349818,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

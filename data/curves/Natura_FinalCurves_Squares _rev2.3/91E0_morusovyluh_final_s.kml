@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_morusovyluh_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					16.967031066438,48.207193659416,0
+					16.968107199872,48.207175235340,0
+					16.968079629836,48.206455911526,0
+					16.967003511454,48.206474335139,0
+					16.967031066438,48.207193659416,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

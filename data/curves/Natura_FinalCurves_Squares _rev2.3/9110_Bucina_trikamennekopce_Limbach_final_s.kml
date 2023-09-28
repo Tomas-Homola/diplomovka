@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_trikamennekopce_Limbach_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.180710212149,48.316256269301,0
+					17.182058060920,48.316230694773,0
+					17.182019707463,48.315331678924,0
+					17.180671882337,48.315357252649,0
+					17.180710212149,48.316256269301,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

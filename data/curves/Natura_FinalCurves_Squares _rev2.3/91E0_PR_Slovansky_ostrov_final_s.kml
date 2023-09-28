@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_PR_Slovansky_ostrov_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					16.990297645843,48.168463767930,0
+					16.991641780446,48.168440477974,0
+					16.991606953469,48.167541329888,0
+					16.990262842333,48.167564619114,0
+					16.990297645843,48.168463767930,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

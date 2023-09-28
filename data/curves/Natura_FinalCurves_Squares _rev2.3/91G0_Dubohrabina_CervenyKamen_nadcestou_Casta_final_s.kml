@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_CervenyKamen_nadcestou_Casta_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.340025182868,48.395900785305,0
+					17.341374985636,48.395873310401,0
+					17.341333718244,48.394974405907,0
+					17.339983939214,48.395001879948,0
+					17.340025182868,48.395900785305,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

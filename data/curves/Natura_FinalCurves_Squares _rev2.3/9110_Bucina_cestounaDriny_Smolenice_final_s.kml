@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_cestounaDriny_Smolenice_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.392006199401,48.513147205098,0
+					17.393359062800,48.513119069981,0
+					17.393316705728,48.512220217642,0
+					17.391963866216,48.512248351876,0
+					17.392006199401,48.513147205098,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

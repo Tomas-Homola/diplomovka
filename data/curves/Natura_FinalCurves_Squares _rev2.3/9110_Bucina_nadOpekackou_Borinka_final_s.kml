@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_nadOpekackou_Borinka_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.130371492034,48.250888907788,0
+					17.131717666714,48.250863948279,0
+					17.131680283482,48.249964892376,0
+					17.130334132366,48.249989851102,0
+					17.130371492034,48.250888907788,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

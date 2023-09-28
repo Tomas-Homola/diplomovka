@@ -4,6 +4,7 @@
 !.gitignore
 !*.m
 !*.txt
+!*.kml
 
 # ...even if they are in subdirectories
 !*/

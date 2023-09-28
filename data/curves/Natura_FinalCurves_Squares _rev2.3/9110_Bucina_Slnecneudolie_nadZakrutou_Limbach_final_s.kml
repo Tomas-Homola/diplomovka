@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_Slnecneudolie_nadZakrutou_Limbach_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.220650742564,48.313422295541,0
+					17.221998480527,48.313396254117,0
+					17.221959429278,48.312497261952,0
+					17.220611714955,48.312523302558,0
+					17.220650742564,48.313422295541,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_cestounaBabu_podcestou2_Pezinok_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.213226371026,48.347575790462,0
+					17.214575016043,48.347549822410,0
+					17.214536048530,48.346650831090,0
+					17.213187427197,48.346676798327,0
+					17.213226371026,48.347575790462,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_Senkarka_vychod_Limbach2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.184307995714,48.308900038951,0
+					17.185655647532,48.308874425160,0
+					17.185617240785,48.307975410311,0
+					17.184269612602,48.308001023298,0
+					17.184307995714,48.308900038951,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

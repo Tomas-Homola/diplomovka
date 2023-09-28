@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_dolnyles1_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					16.906522536715,48.310333182523,0
+					16.907870460072,48.310310823335,0
+					16.907836931001,48.309411652726,0
+					16.906489031297,48.309434011212,0
+					16.906522536715,48.310333182523,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

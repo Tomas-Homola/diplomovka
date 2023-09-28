@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_cicov2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.706540118000,47.763386960906,0
+					17.707873098961,47.763355496877,0
+					17.707826422794,47.762456746849,0
+					17.706493464742,47.762488209893,0
+					17.706540118000,47.763386960906,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

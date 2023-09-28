@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_sala1_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.889182314231,48.158281259369,0
+					17.890525283229,48.158247467269,0
+					17.890474767139,48.157348919546,0
+					17.889131821531,48.157382710586,0
+					17.889182314231,48.158281259369,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

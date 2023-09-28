@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_apalskyostrov1_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					18.123382958119,47.792925887645,0
+					18.124716199465,47.792889566596,0
+					18.124662288991,47.791991154700,0
+					18.123329070556,47.792027474612,0
+					18.123382958119,47.792925887645,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

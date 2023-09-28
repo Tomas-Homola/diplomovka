@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_lesikDubovaCasta_vlavo_Dubova_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.350508453393,48.374183035881,0
+					17.351587828354,48.374160966189,0
+					17.351554695609,48.373441845139,0
+					17.350475335822,48.373463914278,0
+					17.350508453393,48.374183035881,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

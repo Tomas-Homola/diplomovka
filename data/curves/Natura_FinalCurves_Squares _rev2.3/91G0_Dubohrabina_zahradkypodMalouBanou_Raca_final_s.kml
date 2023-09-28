@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_zahradkypodMalouBanou_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.131023440839,48.214706808110,0
+					17.132099621299,48.214686846795,0
+					17.132069747138,48.213967597718,0
+					17.130993581729,48.213987558532,0
+					17.131023440839,48.214706808110,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

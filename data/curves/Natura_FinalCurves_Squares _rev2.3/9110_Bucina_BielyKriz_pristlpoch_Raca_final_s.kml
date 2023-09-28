@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_BielyKriz_pristlpoch_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.134795142571,48.250356954609,0
+					17.136141299412,48.250331943518,0
+					17.136103839339,48.249432890121,0
+					17.134757706061,48.249457900427,0
+					17.134795142571,48.250356954609,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

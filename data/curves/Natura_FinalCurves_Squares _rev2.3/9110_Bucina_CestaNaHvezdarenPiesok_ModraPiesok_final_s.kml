@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_CestaNaHvezdarenPiesok_ModraPiesok_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.264995812584,48.376619043177,0
+					17.266345176747,48.376592456357,0
+					17.266305258097,48.375693501416,0
+					17.264955917652,48.375720087401,0
+					17.264995812584,48.376619043177,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

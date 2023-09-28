@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_bazantnica_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.087492312175,48.080991612397,0
+					17.088834085332,48.080967219015,0
+					17.088797671363,48.080068111587,0
+					17.087455921555,48.080092504204,0
+					17.087492312175,48.080991612397,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

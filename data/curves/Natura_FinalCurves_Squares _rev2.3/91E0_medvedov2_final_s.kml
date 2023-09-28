@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_medvedov2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.688735691183,47.790801200828,0
+					17.690069392578,47.790769930146,0
+					17.690022978543,47.789871171246,0
+					17.688689300091,47.789902440948,0
+					17.688735691183,47.790801200828,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

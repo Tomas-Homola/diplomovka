@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_nadRozalkou_Pezinok_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.238566745098,48.303627462603,0
+					17.239914208749,48.303601215203,0
+					17.239874856318,48.302702232464,0
+					17.238527416293,48.302728479041,0
+					17.238566745098,48.303627462603,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

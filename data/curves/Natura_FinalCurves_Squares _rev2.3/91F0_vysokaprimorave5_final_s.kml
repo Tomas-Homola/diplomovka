@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_vysokaprimorave5_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					16.962427091593,48.333145407090,0
+					16.963775571581,48.333122384682,0
+					16.963741032775,48.332223247347,0
+					16.962392576467,48.332246269033,0
+					16.962427091593,48.333145407090,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_nadSlnecnymudolim_Limbach_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.197818830941,48.334555163555,0
+					17.199167146525,48.334529381295,0
+					17.199128467669,48.333630378601,0
+					17.197780175752,48.333656160053,0
+					17.197818830941,48.334555163555,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

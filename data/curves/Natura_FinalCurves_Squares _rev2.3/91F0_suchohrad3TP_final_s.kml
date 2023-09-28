@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_suchohrad3TP_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					16.860362187803,48.413207197953,0
+					16.861712863934,48.413185345260,0
+					16.861680027432,48.412286166938,0
+					16.860329375090,48.412308018945,0
+					16.860362187803,48.413207197953,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_BielyKriz_okoloLuky_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.143114977318,48.249572297464,0
+					17.143922654899,48.249557234442,0
+					17.143900097411,48.249017805092,0
+					17.143092428312,48.249032867830,0
+					17.143114977318,48.249572297464,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

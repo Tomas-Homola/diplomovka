@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_Sinweg_JZ_Raca_PeknaCesta_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.122352904295,48.203620335968,0
+					17.123159870101,48.203605429345,0
+					17.123137566942,48.203065988371,0
+					17.122330609597,48.203080894713,0
+					17.122352904295,48.203620335968,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

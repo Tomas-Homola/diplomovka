@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_nadodpocivadlomSnehuliacik_BielyKriz_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.137085655578,48.230969743506,0
+					17.138162172740,48.230949720425,0
+					17.138132196581,48.230230476233,0
+					17.137055694483,48.230250498811,0
+					17.137085655578,48.230969743506,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

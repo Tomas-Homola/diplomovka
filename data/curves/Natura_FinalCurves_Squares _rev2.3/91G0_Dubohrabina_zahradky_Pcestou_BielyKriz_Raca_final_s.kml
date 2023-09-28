@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_zahradky_Pcestou_BielyKriz_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.152913861137,48.226265531273,0
+					17.153721166761,48.226250404859,0
+					17.153698524741,48.225710976778,0
+					17.152891227588,48.225726102907,0
+					17.152913861137,48.226265531273,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

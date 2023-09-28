@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_bodikyostrov3_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.464357480360,47.896981286300,0
+					17.465694142235,47.896952575256,0
+					17.465651438545,47.896053674361,0
+					17.464314799763,47.896082384505,0
+					17.464357480360,47.896981286300,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

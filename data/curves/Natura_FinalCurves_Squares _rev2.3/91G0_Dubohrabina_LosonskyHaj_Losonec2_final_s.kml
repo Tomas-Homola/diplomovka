@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_LosonskyHaj_Losonec2_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.412126874972,48.477727339218,0
+					17.413478776386,48.477698982990,0
+					17.413436116533,48.476800138360,0
+					17.412084238958,48.476828493697,0
+					17.412126874972,48.477727339218,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

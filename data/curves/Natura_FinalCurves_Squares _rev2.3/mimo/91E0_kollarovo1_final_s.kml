@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91E0_kollarovo1_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					18.006237770776,47.919517884240,0
+					18.007574407911,47.919482854668,0
+					18.007522286016,47.918584364136,0
+					18.006185671960,47.918619392611,0
+					18.006237770776,47.919517884240,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_kucizdorfskadolina_naddomami_Pezinok_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.251313812939,48.332800298649,0
+					17.252662033271,48.332773890071,0
+					17.252622416466,48.331874919769,0
+					17.251274219796,48.331901327519,0
+					17.251313812939,48.332800298649,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

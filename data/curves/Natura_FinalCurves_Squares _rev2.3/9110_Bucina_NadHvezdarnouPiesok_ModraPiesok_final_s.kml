@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_NadHvezdarnouPiesok_ModraPiesok_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.261613426018,48.370387425508,0
+					17.262962628688,48.370360880897,0
+					17.262922778301,48.369461922876,0
+					17.261573599341,48.369488466654,0
+					17.261613426018,48.370387425508,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

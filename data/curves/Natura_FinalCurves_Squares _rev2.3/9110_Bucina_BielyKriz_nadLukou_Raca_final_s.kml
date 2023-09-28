@@ -1,0 +1,18 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_BielyKriz_nadLukou_Raca_final_s_0</name>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.140311131068,48.253403493100,0
+					17.141657363027,48.253378416258,0
+					17.141619802254,48.252479366576,0
+					17.140273593861,48.252504442632,0
+					17.140311131068,48.253403493100,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>
