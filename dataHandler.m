@@ -120,8 +120,8 @@ classdef dataHandler
 
 		function this = computeTerrainAttributes(this)
 			% najdenie pixelov, kde su NaN hodnoty, aby sa nevykreslovali 
-% 			this.alphaData_DTM = ones(size(this.DTM)); % vytvorenie pola, kde budu ulozene udaje o alpha pre kazdy pixel
-% 			this.alphaData_DTM(isnan(this.DTM)) = 0; % tam, kde su NaN hodnoty, tak budu priehladne
+			this.alphaData_DTM = ones(size(this.DTM)); % vytvorenie pola, kde budu ulozene udaje o alpha pre kazdy pixel
+			this.alphaData_DTM(isnan(this.DTM)) = 0; % tam, kde su NaN hodnoty, tak budu priehladne
 
 		end % end of function computeTerrainAttributes
 
@@ -191,6 +191,18 @@ classdef dataHandler
 
 			end % for cycle end
 
+			% filter points belonging to NaN pixels of DTM
+			for i = 1:this.lasCount
+				selectedPoints = ~isnan(this.DTM(this.ptCloud_pixels{i}));
+				
+				% select only points from non-NaN pixels, attributes and pixel indices
+				this.ptCloud{i} = select(this.ptCloud{i}, selectedPoints);
+				this.ptAttributes{i} = lidarPointAttributes("Classification",...
+									    this.ptAttributes{i}.Classification(selectedPoints));
+				this.ptCloud_pixels{i} = this.ptCloud_pixels{i}(selectedPoints);
+
+			end
+
 			time = toc(time);
 			fprintf('done in %0.2f s\n', time)
 
@@ -199,7 +211,7 @@ classdef dataHandler
 		function this = normalizePtCloud(this, options)
 			arguments
 				this (1,1) dataHandler
-				options.method (1,:) string {mustBeMember(options.method,{'DTM', 'LowestPoint'})} = 'LowestPoint'
+				options.method (1,:) string {mustBeMember(options.method,{'DTM', 'LowestPoint'})} = 'DTM'
 			end
 			
 			time = tic;
@@ -222,12 +234,14 @@ classdef dataHandler
 			end
 
 			if strcmp(options.method, "LowestPoint")
+				
 				for i = 1:this.lasCount % iterate over all point clouds
 % 					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
 					
 					X = this.ptCloud{i}.Location(:, 1);
 					Y = this.ptCloud{i}.Location(:, 2);
 					Z = this.ptCloud{i}.Location(:, 3);
+					% TODO: pridat "Intensity" do normalizovaneho point cloudu
 
 					for j = 1:length(this.DTM(:)) % iterate through each pixel of mesh
 						pixelPoints = this.ptCloud_pixels{i}(:) == j;
@@ -246,184 +260,105 @@ classdef dataHandler
 			
 			fprintf("Normalize points done in %0.3f s\n", time);
 		end % end of normalize point cloud
-
-		function this = computeRaster_Hmax(this)
-	
-			time = tic;
+		
+		function this = computeMetricRasters(this)
+			% allocate space for metric rasters
 			this.statRasters.Hmax = zeros(this.ny, this.nx);
-
-			for i = 1:this.lasCount % iterate over all point clouds
-					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
-					
-					Z = this.ptCloud_normalized{i}.Location(vegetation, 3);
-					pixelIndices = this.ptCloud_pixels{i}(vegetation);
-
-					for j = 1:length(this.DTM(:)) % iterate through each pixel of mesh
-						pixelPoints = pixelIndices == j;
-						if nnz(pixelPoints) == 0
-							continue;
-						end
-						
-						temp = Z(pixelPoints);
-						maxZ = max(temp);
-
-						this.statRasters.Hmax(j) = maxZ;
-					end
-				end
-
-			time = toc(time);
-			fprintf("Compute raster: Hmax done in %0.3f s\n", time);
-		end
-
-		function this = computeRaster_Hmean(this)
-	
-			time = tic;
 			this.statRasters.Hmean = zeros(this.ny, this.nx);
-
-			for i = 1:this.lasCount % iterate over all point clouds
-					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
-					
-					Z = this.ptCloud_normalized{i}.Location(vegetation, 3);
-					pixelIndices = this.ptCloud_pixels{i}(vegetation);
-
-					for j = 1:length(this.DTM(:)) % iterate through each pixel of mesh
-						pixelPoints = pixelIndices == j;
-						if nnz(pixelPoints) == 0
-							continue;
-						end
-						
-						temp = Z(pixelPoints);
-						meanZ = mean(temp);
-
-						this.statRasters.Hmean(j) = meanZ;
-					end
-				end
-
-			time = toc(time);
-			fprintf("Compute raster: Hmean done in %0.3f s\n", time);
-		end
-
-		function this = computeRaster_Hmedian(this)
-	
-			time = tic;
 			this.statRasters.Hmedian = zeros(this.ny, this.nx);
-
-			for i = 1:this.lasCount % iterate over all point clouds
-					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
-					
-					Z = this.ptCloud_normalized{i}.Location(vegetation, 3);
-					pixelIndices = this.ptCloud_pixels{i}(vegetation);
-
-					for j = 1:length(this.DTM(:)) % iterate through each pixel of mesh
-						pixelPoints = pixelIndices == j;
-						if nnz(pixelPoints) == 0
-							continue;
-						end
-						
-						temp = Z(pixelPoints);
-						medianZ = median(temp);
-
-						this.statRasters.Hmedian(j) = medianZ;
-					end
-				end
-
-			time = toc(time);
-			fprintf("Compute raster: Hmedian done in %0.3f s\n", time);
-		end
-
-		function this = computeRaster_Hp25(this)
-	
-			time = tic;
 			this.statRasters.Hp25 = zeros(this.ny, this.nx);
-
-			for i = 1:this.lasCount % iterate over all point clouds
-					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
-					
-					Z = this.ptCloud_normalized{i}.Location(vegetation, 3);
-					pixelIndices = this.ptCloud_pixels{i}(vegetation);
-
-					for j = 1:length(this.DTM(:)) % iterate through each pixel of mesh
-						pixelPoints = pixelIndices == j;
-						if nnz(pixelPoints) == 0
-							continue;
-						end
-						
-						temp = Z(pixelPoints);
-						p25Z = prctile(temp, 25);
-
-						this.statRasters.Hp25(j) = p25Z;
-					end
-				end
-
-			time = toc(time);
-			fprintf("Compute raster: Hp25 done in %0.3f s\n", time);
-		end
-
-		function this = computeRaster_Hp75(this)
-	
-			time = tic;
 			this.statRasters.Hp75 = zeros(this.ny, this.nx);
-
-			for i = 1:this.lasCount % iterate over all point clouds
-					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
-					
-					Z = this.ptCloud_normalized{i}.Location(vegetation, 3);
-					pixelIndices = this.ptCloud_pixels{i}(vegetation);
-
-					for j = 1:length(this.DTM(:)) % iterate through each pixel of mesh
-						pixelPoints = pixelIndices == j;
-						if nnz(pixelPoints) == 0
-							continue;
-						end
-						
-						temp = Z(pixelPoints);
-						p75Z = prctile(temp, 75);
-
-						this.statRasters.Hp75(j) = p75Z;
-					end
-				end
-
-			time = toc(time);
-			fprintf("Compute raster: Hp75 done in %0.3f s\n", time);
-		end
-
-		function this = computeRaster_Hp95(this)
-	
-			time = tic;
 			this.statRasters.Hp95 = zeros(this.ny, this.nx);
 
-			for i = 1:this.lasCount % iterate over all point clouds
-					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
+			time = tic;
+
+			for i = 1:length(this.DTM(:)) % iterate over all pixels
+				Z = [];
+				fprintf("pixel: %d/%d\n", i, length(this.DTM(:)))
+				% find all points belonging to pixel "i"
+				for j = 1:this.lasCount % iterate over all point clouds
+					% cez funkciu "ismember()" je to o dost pomalsie
+% 					isVegetation = ismember(this.ptAttributes{j}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
 					
-					Z = this.ptCloud_normalized{i}.Location(vegetation, 3);
-					pixelIndices = this.ptCloud_pixels{i}(vegetation);
+					isVegetation = this.ptAttributes{j}.Classification == this.VEG_LOW | ...
+								   this.ptAttributes{j}.Classification == this.VEG_MED | ...
+								   this.ptAttributes{j}.Classification == this.VEG_HIGH;
+					% select only vegetation points belonging to pixel "i"
+					selectedPoints = (this.ptCloud_pixels{j} == i) & isVegetation;
 
-					for j = 1:length(this.DTM(:)) % iterate through each pixel of mesh
-						pixelPoints = pixelIndices == j;
-						if nnz(pixelPoints) == 0
-							continue;
-						end
-						
-						temp = Z(pixelPoints);
-						p95Z = prctile(temp, 95);
-
-						this.statRasters.Hp95(j) = p95Z;
-					end
+					Z = [Z; this.ptCloud_normalized{j}.Location(selectedPoints, 3)];
+					
 				end
+				
+				if isempty(Z)
+					continue;
+				end
+				
+				% compute metrics
+				maxZ    = max(Z);
+				meanZ   = mean(Z);
+				medianZ = median(Z);
+				p25Z    = prctile(Z, 25);
+				p75Z    = prctile(Z, 75);
+				p95Z    = prctile(Z, 95);
 
-			time = toc(time);
-			fprintf("Compute raster: Hp95 done in %0.3f s\n", time);
-		end
-
-		function plotHmax(this, options)
-			arguments
-				this (1,1) dataHandler
-				options.ncolors double = 256
+				% save metrics to appropriate rasters
+				this.statRasters.Hmax(i)    = maxZ;
+				this.statRasters.Hmean(i)   = meanZ;
+				this.statRasters.Hmedian(i) = medianZ;
+				this.statRasters.Hp25(i)    = p25Z;
+				this.statRasters.Hp75(i)    = p75Z;
+				this.statRasters.Hp95(i)    = p95Z;
+				
 			end
 
-			imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hmax,...
-					'AlphaData', this.alphaData_DTM)
+			time = toc(time);
+			fprintf("Compute rasters done in %0.3f s\n", time);
+		end
+
+		function plotStatRaster(this, options)
+			arguments
+				this (1,1) dataHandler
+				options.plotData (1,:) string {mustBeMember(options.plotData,{'Hmax', 'Hmean',...
+					'Hmedian','Hp25','Hp75', 'Hp95'})}
+			end
 			
+			if strcmp(options.plotData, 'Hmax')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hmax,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Max height'
+			end
+
+			if strcmp(options.plotData, 'Hmean')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hmean,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Mean height'
+			end
+
+			if strcmp(options.plotData, 'Hmedian')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hmedian,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Median height'
+			end
+
+			if strcmp(options.plotData, 'Hp25')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hp25,...
+					'AlphaData', this.alphaData_DTM)
+				title '25th percentile height'
+			end
+
+			if strcmp(options.plotData, 'Hp75')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hp75,...
+					'AlphaData', this.alphaData_DTM)
+				title '75th percentile height'
+			end
+
+			if strcmp(options.plotData, 'Hp95')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hp95,...
+					'AlphaData', this.alphaData_DTM)
+				title '95th percentile height'
+			end
+
 			colormap jet
 			colorbar
 			axis equal
@@ -469,10 +404,10 @@ classdef dataHandler
             %axis equal
 		end % end of plot point cloud 2D
 
-		function plotPtCloud3D(this, colorData, selectedClasses, options)
+		function plotPtCloud3D(this, colorMap, selectedClasses, options)
             arguments
 				this (1,1) dataHandler
-				colorData
+				colorMap (:, 3)
 				selectedClasses
 				options.useData (1,:) string {mustBeMember(options.useData,{'original', 'normalized'})} = 'original'
 			end
@@ -484,13 +419,14 @@ classdef dataHandler
         
 			% plot only points from selected classes
 			hold on
-			
+
 			if strcmp(options.useData, 'original')
 
 				for i = 1:this.lasCount
 					classMember = ismember(this.ptAttributes{i}.Classification, selectedClasses);
 					if any(classMember)
-						pcshow(this.ptCloud{i}.Location(classMember, :), colorData{i}(classMember, :))
+						colorData = reshape(label2rgb(this.ptAttributes{i}.Classification, colorMap, 'k'), [], 3);
+						pcshow(this.ptCloud{i}.Location(classMember, :), colorData(classMember, :))
 					else
 						warning('Nothing to plot')
 					end
@@ -498,10 +434,11 @@ classdef dataHandler
 			
 			elseif strcmp(options.useData, 'normalized')
 				
-					for i = 1:this.lasCount
+				for i = 1:this.lasCount
 					classMember = ismember(this.ptAttributes{i}.Classification, selectedClasses);
 					if any(classMember)
-						pcshow(this.ptCloud_normalized{i}.Location(classMember, :), colorData{i}(classMember, :))
+						colorData = reshape(label2rgb(this.ptAttributes{i}.Classification, colorMap, 'k'), [], 3);
+						pcshow(this.ptCloud_normalized{i}.Location(classMember, :), colorData(classMember, :))
 					else
 						warning('Nothing to plot')
 					end
@@ -515,11 +452,4 @@ classdef dataHandler
 		end % end of plot point cloud 3D
 
 	end % end of methods
-end
-
-
-
-
-
-
-
+end % end of classdef

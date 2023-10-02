@@ -6,9 +6,9 @@ clc;
 [MAIN_DIRECTORY,~,~] = fileparts(matlab.desktop.editor.getActiveFilename);
 
 % download: https://drive.google.com/drive/folders/1EWlkqu3qofB5kB5QLcPkrFyJxFm2zBec?usp=sharing
-DATA_DIRECTORY = fullfile(MAIN_DIRECTORY, '_data');
-DTM_DIRECOTRY  = fullfile(DATA_DIRECTORY, 'ExportDMR');
-PC_DIRECTORY   = fullfile(DATA_DIRECTORY, 'ExportMB');
+DATA_DIRECTORY = fullfile(MAIN_DIRECTORY, 'data');
+DTM_DIRECOTRY  = fullfile(DATA_DIRECTORY, 'ExportDMR4');
+PC_DIRECTORY   = fullfile(DATA_DIRECTORY, 'ExportMB4');
 
 cd(MAIN_DIRECTORY);
 
@@ -35,13 +35,11 @@ figure('Name', 'Digital Terrain Model data')
 title 'DTM data'
 mapshow(heightMatrix, rasterReference, 'DisplayType', 'surface');
 demcmap(heightMatrix, 256)
-view(3);
+view(2);
 daspect([1 1 1]) % cim je posledne cislo blizsie ku 0, tym viac sa skaluje "z" suradnica
 axis normal
 
 %% DATA READING - PC
-cd(MAIN_DIRECTORY);
-
 cd(PC_DIRECTORY);
 lasFiles = dir('*.las'); % find all *.las files
 lasCount = length(lasFiles); % number of found *.las files
@@ -75,22 +73,6 @@ for i = 1:lasCount
 end
 hold off
 
-%% POINTS SELECTION
-% ground = struct;
-% 
-% x = []; y = []; z = [];
-% 
-% for i = 1:lasCount
-% 	x = [x; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 1)];
-% 	y = [y; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 2)];
-% 	z = [z; ptCloud{i}.Location(ptAttributes{i}.Classification == 2, 3)];
-% 
-% end
-% 
-% ground.Location = [x, y, z];
-% 
-% pcshow(ground.Location, COLOR_MED_VEG)
-
 %%
 cd(MAIN_DIRECTORY);
 
@@ -100,55 +82,39 @@ handle = handle.computePointCloudAttributes();
 handle = handle.normalizePtCloud("method","DTM");
 
 %%
-handle = handle.computeRaster_Hmax();
+figure("Name","Original Point Cloud")
+handle.plotPtCloud3D(colorMap, [2, 3, 4, 5],"useData","original")
+
+figure("Name","Normalized Point Cloud")
+handle.plotPtCloud3D(colorMap, [2, 3, 4, 5],"useData","normalized")
 
 %%
-handle = handle.computeRaster_Hmean();
-
-%%
-handle = handle.computeRaster_Hmedian();
-
-%%
-handle = handle.computeRaster_Hp25();
-
-handle = handle.computeRaster_Hp75();
-
-handle = handle.computeRaster_Hp95();
+handle = handle.computeMetricRasters();
 
 %%
 figure
-handle.plotTerrain()
-hold on
-% handle.plotPtCloud2D(colorData, [5]);
-handle.plotMesh("LineWidth", 0.5);
-hold off
-
-%%
-figure
-handle.plotPtCloud3D(colorData, [3, 4, 5],"useData","original")
-
-%%
-figure
-handle.plotPtCloud3D(colorData, [3, 4, 5],"useData","normalized")
-
-%%
-figure
-imagesc([handle.x1 handle.x2], [handle.y1 handle.y2], handle.statRasters.Hmax,...
-					'AlphaData', handle.alphaData_DTM)
-title 'Max height in pixels'
-% title 'Mean height in pixels'
-% title 'Median height in pixels'
-% title 'Percentile 25 height in pixels'
-% title 'Percentile 75 height in pixels'
-% title 'Percentile 95 height in pixels'
+handle.plotStatRaster("plotData","Hp95")
 colormap jet
 colorbar
 axis equal
 axis xy
 
+%% EXPORT TO TIFF
+geotiffwrite("_images/data4/Hmax_data4", handle.statRasters.Hmax, rasterReference,"CoordRefSysCode",8353);
+
+geotiffwrite("_images/data4/Hmean_data4", handle.statRasters.Hmean, rasterReference,"CoordRefSysCode",8353);
+
+geotiffwrite("_images/data4/Hmedian_data4", handle.statRasters.Hmedian, rasterReference,"CoordRefSysCode",8353);
+
+geotiffwrite("_images/data4/Hp25_data4", handle.statRasters.Hp25, rasterReference,"CoordRefSysCode",8353);
+
+geotiffwrite("_images/data4/Hp75_data4", handle.statRasters.Hp75, rasterReference,"CoordRefSysCode",8353);
+
+geotiffwrite("_images/data4/Hp95_data4", handle.statRasters.Hp95, rasterReference,"CoordRefSysCode",8353);
 
 
+%%
+[H, R] = readgeoraster('Hmax.tif', 'OutputType', 'double');
 
-
-
+H = flipud(H);
 
