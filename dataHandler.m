@@ -20,8 +20,9 @@ classdef dataHandler
 		ptAttributes					% cell of classification for all points clouds
 		ptCloud_pixels					% DTM pixel indices of all points in ptCloud
 
-		statRasters
-
+		metricsRasters
+		
+		GROUND = 2
 		VEG_LOW = 3
 		VEG_MED = 4
 		VEG_HIGH = 5
@@ -63,7 +64,7 @@ classdef dataHandler
 			this.alphaData_DTM = ones(size(this.DTM)); % vytvorenie pola, kde budu ulozene udaje o alpha pre kazdy pixel
 			this.alphaData_DTM(isnan(this.DTM)) = 0; % tam, kde su NaN hodnoty, tak budu priehladne
 			
-			this.statRasters = struct;
+			this.metricsRasters = struct;
 
 		end % end of constructor
 		
@@ -263,100 +264,195 @@ classdef dataHandler
 		
 		function this = computeMetricRasters(this)
 			% allocate space for metric rasters
-			this.statRasters.Hmax = zeros(this.ny, this.nx);
-			this.statRasters.Hmean = zeros(this.ny, this.nx);
-			this.statRasters.Hmedian = zeros(this.ny, this.nx);
-			this.statRasters.Hp25 = zeros(this.ny, this.nx);
-			this.statRasters.Hp75 = zeros(this.ny, this.nx);
-			this.statRasters.Hp95 = zeros(this.ny, this.nx);
+			% ECOSYSTEM HEIGHT
+			this.metricsRasters.Hmax = NaN(this.ny, this.nx);
+			this.metricsRasters.Hmean = NaN(this.ny, this.nx);
+			this.metricsRasters.Hmedian = NaN(this.ny, this.nx);
+			this.metricsRasters.Hp25 = NaN(this.ny, this.nx);
+			this.metricsRasters.Hp75 = NaN(this.ny, this.nx);
+			this.metricsRasters.Hp95 = NaN(this.ny, this.nx);
+			NaN
+			% ECOSYSTEM COVER
+			this.metricsRasters.PPR = NaN(this.ny, this.nx);
 
+			% ECOSYSTEM STRUCTURAL COMPLEXITY
+			this.metricsRasters.Coeff_var_z = NaN(this.ny, this.nx);
+			this.metricsRasters.Hkurt = NaN(this.ny, this.nx);
+			this.metricsRasters.Hskew = NaN(this.ny, this.nx);
+			this.metricsRasters.Hstd = NaN(this.ny, this.nx);
+			this.metricsRasters.Hvar = NaN(this.ny, this.nx);
+				
 			time = tic;
 
 			for i = 1:length(this.DTM(:)) % iterate over all pixels
-				Z = [];
-				fprintf("pixel: %d/%d\n", i, length(this.DTM(:)))
-				% find all points belonging to pixel "i"
-				for j = 1:this.lasCount % iterate over all point clouds
-					% cez funkciu "ismember()" je to o dost pomalsie
-% 					isVegetation = ismember(this.ptAttributes{j}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
-					
-					isVegetation = this.ptAttributes{j}.Classification == this.VEG_LOW | ...
-								   this.ptAttributes{j}.Classification == this.VEG_MED | ...
-								   this.ptAttributes{j}.Classification == this.VEG_HIGH;
-					% select only vegetation points belonging to pixel "i"
-					selectedPoints = (this.ptCloud_pixels{j} == i) & isVegetation;
-
-					Z = [Z; this.ptCloud_normalized{j}.Location(selectedPoints, 3)];
-					
-				end
-				
-				if isempty(Z)
+				% skip pixels of DTM where there is NaN value
+				if isnan(this.DTM(i))
 					continue;
 				end
 				
+				Z = [];
+				groundPoints = 0;
+				allPixelPoints = 0;
+
+				fprintf("pixel: %d/%d\n", i, length(this.DTM(:)))
+				% find all points belonging to pixel "i"
+				for j = 1:this.lasCount % iterate over all point clouds
+					% find vegetation points
+					isVegetation = this.ptAttributes{j}.Classification == this.VEG_LOW | ...
+								   this.ptAttributes{j}.Classification == this.VEG_MED | ...
+								   this.ptAttributes{j}.Classification == this.VEG_HIGH;
+					% find points that belong to pixel "i"
+					isInPixel = this.ptCloud_pixels{j} == i;
+
+					% select only vegetation points belonging to pixel "i"
+					selectedPoints = isInPixel & isVegetation;
+
+					Z = [Z; this.ptCloud_normalized{j}.Location(selectedPoints, 3)];
+					
+					% find ground points which belong to pixel "i"
+					isGround = this.ptAttributes{j}.Classification == this.GROUND;
+					selectedPoints = isInPixel & isGround;
+					
+% 					if nnz(selectedPoints) ~= 0
+% 						fprintf("...\n");
+% 					end
+
+					% find how many ground points there are within pixel "i"
+					groundPoints = groundPoints + nnz(selectedPoints);
+					% find how many points in total there are within pixel "i"
+					allPixelPoints = allPixelPoints + nnz(isInPixel);
+				end
+				
+				% if no points are found within pixel "i" -> continue to next pixel
+				if allPixelPoints == 0
+					continue;
+				end
+				
+				if isempty(Z)
+					Z = 0;
+				end
+
 				% compute metrics
-				maxZ    = max(Z);
-				meanZ   = mean(Z);
-				medianZ = median(Z);
-				p25Z    = prctile(Z, 25);
-				p75Z    = prctile(Z, 75);
-				p95Z    = prctile(Z, 95);
+				maxZ     = max(Z);
+				meanZ    = mean(Z);
+				medianZ  = median(Z);
+				p25Z     = prctile(Z, 25);
+				p75Z     = prctile(Z, 75);
+				p95Z     = prctile(Z, 95);
+
+				PPR      = groundPoints / allPixelPoints;
+
+% 				if (groundPoints > allPixelPoints)
+% 					fprintf("aaaa\n");
+% 				end
+
+				kurtZ    = kurtosis(Z);
+				skewZ    = skewness(Z);
+				varZ     = var(Z);
+				stdZ     = std(Z);
+				coefVarZ = stdZ / meanZ;
 
 				% save metrics to appropriate rasters
-				this.statRasters.Hmax(i)    = maxZ;
-				this.statRasters.Hmean(i)   = meanZ;
-				this.statRasters.Hmedian(i) = medianZ;
-				this.statRasters.Hp25(i)    = p25Z;
-				this.statRasters.Hp75(i)    = p75Z;
-				this.statRasters.Hp95(i)    = p95Z;
+				this.metricsRasters.Hmax(i)     = maxZ;
+				this.metricsRasters.Hmean(i)    = meanZ;
+				this.metricsRasters.Hmedian(i)  = medianZ;
+				this.metricsRasters.Hp25(i)     = p25Z;
+				this.metricsRasters.Hp75(i)     = p75Z;
+				this.metricsRasters.Hp95(i)     = p95Z;
 				
+				this.metricsRasters.PPR(i)		 = PPR;
+
+				this.metricsRasters.Coeff_var_z(i) = coefVarZ;
+				this.metricsRasters.Hkurt(i)       = kurtZ;
+				this.metricsRasters.Hskew(i)       = skewZ;
+				this.metricsRasters.Hstd(i)        = stdZ;
+				this.metricsRasters.Hvar(i)        = varZ;
+
 			end
 
 			time = toc(time);
 			fprintf("Compute rasters done in %0.3f s\n", time);
 		end
 
-		function plotStatRaster(this, options)
+		function plotMetricRaster(this, options)
 			arguments
 				this (1,1) dataHandler
 				options.plotData (1,:) string {mustBeMember(options.plotData,{'Hmax', 'Hmean',...
-					'Hmedian','Hp25','Hp75', 'Hp95'})}
+					'Hmedian','Hp25','Hp75', 'Hp95',...
+					'PPR', ...
+					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
 			end
 			
 			if strcmp(options.plotData, 'Hmax')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hmax,...
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmax,...
 					'AlphaData', this.alphaData_DTM)
-				title 'Max height'
+				title 'Max of normalized height'
 			end
 
 			if strcmp(options.plotData, 'Hmean')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hmean,...
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmean,...
 					'AlphaData', this.alphaData_DTM)
-				title 'Mean height'
+				title 'Mean of normalized height'
 			end
 
 			if strcmp(options.plotData, 'Hmedian')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hmedian,...
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmedian,...
 					'AlphaData', this.alphaData_DTM)
-				title 'Median height'
+				title 'Median of normalized height'
 			end
 
 			if strcmp(options.plotData, 'Hp25')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hp25,...
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp25,...
 					'AlphaData', this.alphaData_DTM)
-				title '25th percentile height'
+				title '25th percentile of normalized height'
 			end
 
 			if strcmp(options.plotData, 'Hp75')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hp75,...
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp75,...
 					'AlphaData', this.alphaData_DTM)
-				title '75th percentile height'
+				title '75th percentile of normalized height'
 			end
 
 			if strcmp(options.plotData, 'Hp95')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.statRasters.Hp95,...
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp95,...
 					'AlphaData', this.alphaData_DTM)
-				title '95th percentile height'
+				title '95th percentile of normalized height'
+			end
+
+			if strcmp(options.plotData, 'PPR')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.PPR,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Pulse penetration ratio'
+			end
+
+			if strcmp(options.plotData, 'Coeff_var_z')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Coeff_var_z,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Coefficient of variation'
+			end
+
+			if strcmp(options.plotData, 'Hkurt')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hkurt,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Kurtosis of normalized height'
+			end
+
+			if strcmp(options.plotData, 'Hskew')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hskew,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Skewness of normalized height'
+			end
+
+			if strcmp(options.plotData, 'Hstd')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hstd,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Standart deviation of normalized height'
+			end
+
+			if strcmp(options.plotData, 'Hvar')
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hvar,...
+					'AlphaData', this.alphaData_DTM)
+				title 'Variance of normalized height'
 			end
 
 			colormap jet
@@ -366,6 +462,124 @@ classdef dataHandler
 
 		end % end of function plotTerrain
 
+		function exportMetricRaster(this, fileName, options)
+			arguments
+				this dataHandler
+				fileName (1,:) string
+				options.exportLayer (1,:) string {mustBeMember(options.exportLayer,{'Hmax', 'Hmean',...
+					'Hmedian','Hp25','Hp75', 'Hp95',...
+					'PPR', ...
+					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
+			end
+
+			if strcmp(options.exportLayer, 'Hmax')
+				geotiffwrite(fileName + "_Hmax", this.metricsRasters.Hmax,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hmean')
+				geotiffwrite(fileName + "_Hmean", this.metricsRasters.Hmean,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hmedian')
+				geotiffwrite(fileName + "_Hmedian", this.metricsRasters.Hmedian,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hp25')
+				geotiffwrite(fileName + "_Hp25", this.metricsRasters.Hp25,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hp75')
+				geotiffwrite(fileName + "_Hp75", this.metricsRasters.Hp75,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hp95')
+				geotiffwrite(fileName + "_Hp95", this.metricsRasters.Hp95,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'PPR')
+				geotiffwrite(fileName + "_PPR", this.metricsRasters.PPR,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Coeff_var_z')
+				geotiffwrite(fileName + "_Coeff_var_z", this.metricsRasters.Coeff_var_z,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hkurt')
+				geotiffwrite(fileName + "_Hkurt", this.metricsRasters.Hkurt,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hskew')
+				geotiffwrite(fileName + "_Hskew", this.metricsRasters.Hskew,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hstd')
+				geotiffwrite(fileName + "_Hstd", this.metricsRasters.Hstd,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+
+			if strcmp(options.exportLayer, 'Hvar')
+				geotiffwrite(fileName + "_Hvar", this.metricsRasters.Hvar,...
+					this.RasterReference,"CoordRefSysCode",8353);
+			end
+			
+			fprintf("Metric " + options.exportLayer + " exported\n");
+		end
+
+		function exportAllMetricRasters(this, fileName)
+			arguments
+				this dataHandler
+				fileName (1,:) string
+			end
+			
+			% Maximum of normalized height
+			geotiffwrite(fileName + "_Hmax", this.metricsRasters.Hmax,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% Mean of normalized height
+			geotiffwrite(fileName + "_Hmean", this.metricsRasters.Hmean,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% Median of normalized height
+			geotiffwrite(fileName + "_Hmedian", this.metricsRasters.Hmedian,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% 25th percentile of normalized height
+			geotiffwrite(fileName + "_Hp25", this.metricsRasters.Hp25,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% 75th percentile of normalized height
+			geotiffwrite(fileName + "_Hp75", this.metricsRasters.Hp75,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% 95th percentile of normalized height
+			geotiffwrite(fileName + "_Hp95", this.metricsRasters.Hp95,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% Pulse Penetration Ratio
+			geotiffwrite(fileName + "_PPR", this.metricsRasters.PPR,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% Coefficient of variation
+			geotiffwrite(fileName + "_Coeff_var_z", this.metricsRasters.Coeff_var_z,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% Kurtosis of normalized height
+			geotiffwrite(fileName + "_Hkurt", this.metricsRasters.Hkurt,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% Skewness of normalized height
+			geotiffwrite(fileName + "_Hskew", this.metricsRasters.Hskew,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% Standard deviation of normalized height
+			geotiffwrite(fileName + "_Hstd", this.metricsRasters.Hstd,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			% Variance of normalized height
+			geotiffwrite(fileName + "_Hvar", this.metricsRasters.Hvar,...
+				this.RasterReference,"CoordRefSysCode",8353);
+			
+			fprintf("All metrics exported\n");
+		end
 
 		function plotPtCloud2D(this, colorData, selectedClass) 
 			arguments

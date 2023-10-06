@@ -7,8 +7,8 @@ clc;
 
 % download: https://drive.google.com/drive/folders/1EWlkqu3qofB5kB5QLcPkrFyJxFm2zBec?usp=sharing
 DATA_DIRECTORY = fullfile(MAIN_DIRECTORY, 'data');
-DTM_DIRECOTRY  = fullfile(DATA_DIRECTORY, 'ExportDMR4');
-PC_DIRECTORY   = fullfile(DATA_DIRECTORY, 'ExportMB4');
+DTM_DIRECOTRY  = fullfile(DATA_DIRECTORY, 'ExportDMR_lesBodiky');
+PC_DIRECTORY   = fullfile(DATA_DIRECTORY, 'ExportMB_lesBodiky');
 
 cd(MAIN_DIRECTORY);
 
@@ -66,6 +66,7 @@ title 'Point Cloud data'
 hold on
 for i = 1:lasCount
 	classMember = ismember(ptAttributes{i}.Classification, selectedClasses);
+% 	classMember = classMember & ptCloud{i}.Intensity < 10;
 		if any(classMember)
 			pcshow(ptCloud{i}.Location(classMember, :), colorData{i}(classMember, :), ...
 				'MarkerSize', 20)
@@ -81,40 +82,51 @@ handle = handle.meshPlane();
 handle = handle.computePointCloudAttributes();
 handle = handle.normalizePtCloud("method","DTM");
 
-%%
+%% PLOT ORIGINAL AND NORMALIZED POINT CLOUD
 figure("Name","Original Point Cloud")
 handle.plotPtCloud3D(colorMap, [2, 3, 4, 5],"useData","original")
 
 figure("Name","Normalized Point Cloud")
 handle.plotPtCloud3D(colorMap, [2, 3, 4, 5],"useData","normalized")
 
-%%
+%% COMPUTE ALL METRICS FOR GIVEN POINT CLOUD
 handle = handle.computeMetricRasters();
 
-%%
+%% PLOT SELECTED METRIC
 figure
-handle.plotStatRaster("plotData","Hp95")
-colormap jet
+handle.plotMetricRaster("plotData","PPR")
+% colormap jet
+colormap hot
 colorbar
 axis equal
 axis xy
 
-%% EXPORT TO TIFF
-geotiffwrite("_images/data4/Hmax_data4", handle.statRasters.Hmax, rasterReference,"CoordRefSysCode",8353);
+%%
+figure
+imagesc([handle.x1 handle.x2], [handle.y1 handle.y2], temp,...
+	'AlphaData', handle.alphaData_DTM)
+title 'Max of normalized height'
+colormap hot
+colorbar
+axis equal
+axis xy
 
-geotiffwrite("_images/data4/Hmean_data4", handle.statRasters.Hmean, rasterReference,"CoordRefSysCode",8353);
+%% EXPORT SELECTED METRIC TO .TIF FILE
+handle.exportMetricRaster("data_lesSipka","exportLayer","Hstd");
 
-geotiffwrite("_images/data4/Hmedian_data4", handle.statRasters.Hmedian, rasterReference,"CoordRefSysCode",8353);
-
-geotiffwrite("_images/data4/Hp25_data4", handle.statRasters.Hp25, rasterReference,"CoordRefSysCode",8353);
-
-geotiffwrite("_images/data4/Hp75_data4", handle.statRasters.Hp75, rasterReference,"CoordRefSysCode",8353);
-
-geotiffwrite("_images/data4/Hp95_data4", handle.statRasters.Hp95, rasterReference,"CoordRefSysCode",8353);
-
+%% EXPORT ALL METRICS TO .TIF FILES
+handle.exportAllMetricRasters("data_lesBodiky");
 
 %%
 [H, R] = readgeoraster('Hmax.tif', 'OutputType', 'double');
 
 H = flipud(H);
+
+%% Export color palette
+c = jet;
+c = c*255;
+writematrix(c, "jet_palette.txt","Delimiter",' ');
+
+
+
 
