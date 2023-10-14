@@ -446,7 +446,7 @@ classdef dataHandler
 			if strcmp(options.plotData, 'Hstd')
 				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hstd,...
 					'AlphaData', this.alphaData_DTM)
-				title 'Standart deviation of normalized height'
+				title 'Standard deviation of normalized height'
 			end
 
 			if strcmp(options.plotData, 'Hvar')
@@ -460,7 +460,123 @@ classdef dataHandler
 			axis equal
 			axis xy
 
-		end % end of function plotTerrain
+		end % end of function plotMetricRaster
+
+		function plotMetricRasters(this)
+			arguments
+				this (1,1) dataHandler
+			end
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmax,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Max of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmean,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Mean of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmedian,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Median of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp25,...
+				'AlphaData', this.alphaData_DTM)
+			title '25th percentile of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp75,...
+				'AlphaData', this.alphaData_DTM)
+			title '75th percentile of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp95,...
+				'AlphaData', this.alphaData_DTM)
+			title '95th percentile of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.PPR,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Pulse penetration ratio'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Coeff_var_z,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Coefficient of variation'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hkurt,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Kurtosis of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hskew,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Skewness of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hstd,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Standard deviation of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+			figure
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hvar,...
+				'AlphaData', this.alphaData_DTM)
+			title 'Variance of normalized height'
+			colormap jet
+			colorbar
+			axis equal
+			axis xy
+
+		end % end of function plotMetricRasters
 
 		function exportMetricRaster(this, fileName, options)
 			arguments
