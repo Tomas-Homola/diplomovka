@@ -32,6 +32,10 @@ classdef dataFeatureExtractor
 
 		% structure for rasters of individual metrics computed from point cloud
 		metricsRasters
+
+		% 
+		plotTitles
+		exportTitles
 	end
 	
 	methods
@@ -65,6 +69,66 @@ classdef dataFeatureExtractor
             this.y2 = this.y1 + (this.ny-1)*this.h;
 
 			% create new RasterReference object for the new mesh
+			this.RR_new = maprefcells([this.x1, this.x2 + h], [this.y1, this.y2 + h], [this.ny, this.nx]);
+
+			this.RR_new.ProjectedCRS = projcrs(8353);
+
+			% initialize structures for metric rasters and plot titles
+			this.metricsRasters = struct;
+
+			this.plotTitles = struct;
+			this.plotTitles.Hmax        = 'Max of normalized height';
+			this.plotTitles.Hmean       = 'Mean of normalized height';
+			this.plotTitles.Hmedian     = 'Median of normalized height';
+			this.plotTitles.Hp25        = '25th percentile of normalized height';
+			this.plotTitles.Hp75	    = '75th percentile of normalized height';
+			this.plotTitles.Hp95        = '95th percentile of normalized height';
+			
+			this.plotTitles.PPR         = 'Pulse penetration ratio';
+			this.plotTitles.DAM_z		= 'Number of returns above mean height';
+			this.plotTitles.BR_bellow_1 = 'Proportion of vegetation points bellow 1 m';
+			this.plotTitles.BR_1_2      = 'Proportion of vegetation points between 1 m - 2 m';
+			this.plotTitles.BR_2_3      = 'Proportion of vegetation points between 2 m - 3 m';
+			this.plotTitles.BR_above_3  = 'Proportion of vegetation points above 3 m';
+			this.plotTitles.BR_3_4      = 'Proportion of vegetation points between 3 m - 4 m';
+			this.plotTitles.BR_4_5      = 'Proportion of vegetation points between 4 m - 5 m';
+			this.plotTitles.BR_bellow_5 = 'Proportion of vegetation points bellow 5 m';
+			this.plotTitles.BR_5_20     = 'Proportion of vegetation points between 5 m - 20 m';
+			this.plotTitles.BR_above_20 = 'Proportion of vegetation points above 20 m';
+			
+			this.plotTitles.Coeff_var_z  = 'Coefficient of variation';
+			this.plotTitles.Hkurt        = 'Kurtosis of normalized height';
+			this.plotTitles.Hskew        = 'Skewness of normalized height';
+			this.plotTitles.Hstd         = 'Standard deviation of normalized height';
+			this.plotTitles.Hvar         = 'Variance of normalized height';
+
+			% initialize structure for export titles
+			this.exportTitles = struct;
+
+			this.exportTitles.Hmax        = '1_Hmax_';
+			this.exportTitles.Hmean       = '2_Hmean_';
+			this.exportTitles.Hmedian     = '3_Hmedian_';
+			this.exportTitles.Hp25        = '4_Hp25_';
+			this.exportTitles.Hp75	      = '6_HP75_';
+			this.exportTitles.Hp95        = '7_HP95_';
+			
+			this.exportTitles.PPR         = '8_PPR_';
+			this.exportTitles.DAM_z		  = '9_Density_above_mean_z_';
+			this.exportTitles.BR_bellow_1 = '10_BR_bellow_1_';
+			this.exportTitles.BR_1_2      = '11_BR_1_2_';
+			this.exportTitles.BR_2_3      = '12_BR_2_3_';
+			this.exportTitles.BR_above_3  = '13_BR_above_3_';
+			this.exportTitles.BR_3_4      = '14_BR_3_4_';
+			this.exportTitles.BR_4_5      = '15_BR_4_5_';
+			this.exportTitles.BR_bellow_5 = '16_BR_bellow_5_';
+			this.exportTitles.BR_5_20     = '17_BR_5_20_';
+			this.exportTitles.BR_above_20 = '18_BR_above_20_';
+			
+			this.exportTitles.Coeff_var_z  = '19_Coeff_var_z_';
+			this.exportTitles.Hkurt       = '21_Hkurt_';
+			this.exportTitles.Hskew       = '23_Hskew_';
+			this.exportTitles.Hstd        = '24_Hstd_';
+			this.exportTitles.Hvar        = '25_Hvar_';
 
 		end % end of constructor
 
@@ -120,7 +184,7 @@ classdef dataFeatureExtractor
 			
 		end % end of function plotMesh
 
-		function this = computeMetricRasters(this)
+		function [this, timePassed] = computeMetricRasters(this)
 			% allocate space for metric rasters
 			% ECOSYSTEM HEIGHT
 			this.metricsRasters.Hmax = NaN(this.ny, this.nx);
@@ -129,9 +193,19 @@ classdef dataFeatureExtractor
 			this.metricsRasters.Hp25 = NaN(this.ny, this.nx);
 			this.metricsRasters.Hp75 = NaN(this.ny, this.nx);
 			this.metricsRasters.Hp95 = NaN(this.ny, this.nx);
-			NaN
+
 			% ECOSYSTEM COVER
 			this.metricsRasters.PPR = NaN(this.ny, this.nx);
+			this.metricsRasters.DAM_z = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_bellow_1 = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_1_2 = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_2_3 = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_above_3 = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_3_4 = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_4_5 = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_bellow_5 = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_5_20 = NaN(this.ny, this.nx);
+			this.metricsRasters.BR_above_20 = NaN(this.ny, this.nx);
 
 			% ECOSYSTEM STRUCTURAL COMPLEXITY
 			this.metricsRasters.Coeff_var_z = NaN(this.ny, this.nx);
@@ -207,11 +281,17 @@ classdef dataFeatureExtractor
 				p75Z     = prctile(Z, 75);
 				p95Z     = prctile(Z, 95);
 
-				PPR      = groundPoints / allPixelPoints;
-
-% 				if (groundPoints > allPixelPoints)
-% 					fprintf("aaaa\n");
-% 				end
+				PPR         = groundPoints / allPixelPoints;
+				DAM_z       = nnz(Z > meanZ);
+				BR_bellow_1 = nnz(Z < 1) / length(Z);
+				BR_1_2      = nnz (Z > 1 & Z < 2) / length(Z);
+				BR_2_3      = nnz (Z > 2 & Z < 3) / length(Z);
+				BR_above_3  = nnz (Z > 3) / length(Z);
+				BR_3_4      = nnz (Z > 3 & Z < 4) / length(Z);
+				BR_4_5      = nnz (Z > 4 & Z < 5) / length(Z);
+				BR_bellow_5 = nnz (Z < 5) / length(Z);
+				BR_5_20     = nnz (Z > 5 & Z < 20) / length(Z);
+				BR_above_20 = nnz (Z > 20) / length(Z);
 
 				kurtZ    = kurtosis(Z);
 				skewZ    = skewness(Z);
@@ -227,7 +307,17 @@ classdef dataFeatureExtractor
 				this.metricsRasters.Hp75(i)     = p75Z;
 				this.metricsRasters.Hp95(i)     = p95Z;
 				
-				this.metricsRasters.PPR(i)		 = PPR;
+				this.metricsRasters.PPR(i)		   = PPR;
+				this.metricsRasters.DAM_z(i)	   = DAM_z;
+				this.metricsRasters.BR_bellow_1(i) = BR_bellow_1;
+				this.metricsRasters.BR_1_2(i)      = BR_1_2;
+				this.metricsRasters.BR_2_3(i)      = BR_2_3;
+				this.metricsRasters.BR_above_3(i)  = BR_above_3;
+				this.metricsRasters.BR_3_4(i)      = BR_3_4;
+				this.metricsRasters.BR_4_5(i)      = BR_4_5;
+				this.metricsRasters.BR_bellow_5(i) = BR_bellow_5;
+				this.metricsRasters.BR_5_20(i)     = BR_5_20;
+				this.metricsRasters.BR_above_20(i) = BR_above_20;
 
 				this.metricsRasters.Coeff_var_z(i) = coefVarZ;
 				this.metricsRasters.Hkurt(i)       = kurtZ;
@@ -242,88 +332,42 @@ classdef dataFeatureExtractor
 
 			this.alphaData = ones(size(this.metricsRasters.Hmax)); % vytvorenie pola, kde budu ulozene udaje o alpha pre kazdy pixel
 			this.alphaData(isnan(this.metricsRasters.Hmax)) = 0; % tam, kde su NaN hodnoty, tak budu priehladne
+
+			timePassed = time;
 		end % end of function computeMetricRasters
+
+		function this = clipMetricRaster(this, options)
+			arguments
+				this (1,1) dataFeatureExtractor
+				options.clipData (1,:) string {mustBeMember(options.clipData,{'Hmax', 'Hmean',...
+					'Hmedian','Hp25','Hp75', 'Hp95'...
+					'PPR','DAM_z','BR_bellow_1','BR_1_2','BR_2_3','BR_above_3','BR_3_4','BR_4_5','BR_bellow_5','BR_5_20','BR_above_20' ...
+					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
+				options.percentile (1,1) {mustBeNumeric, mustBeInRange(options.percentile, 0, 100)} = 99
+			end
+			
+			chosenRaster = this.metricsRasters.(options.clipData);
+			chosenPercentile = prctile(chosenRaster(:), options.percentile);
+
+			chosenRaster(chosenRaster > chosenPercentile) = chosenPercentile;
+
+			this.metricsRasters.(options.clipData) = chosenRaster;
+
+			fprintf("Data " + options.clipData + " cliped\n");
+		end
 
 		function plotMetricRaster(this, options)
 			arguments
 				this (1,1) dataFeatureExtractor
 				options.plotData (1,:) string {mustBeMember(options.plotData,{'Hmax', 'Hmean',...
-					'Hmedian','Hp25','Hp75', 'Hp95',...
-					'PPR', ...
+					'Hmedian','Hp25','Hp75', 'Hp95'...
+					'PPR','DAM_z','BR_bellow_1','BR_1_2','BR_2_3','BR_above_3','BR_3_4','BR_4_5','BR_bellow_5','BR_5_20','BR_above_20' ...
 					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
 			end
-			
-			if strcmp(options.plotData, 'Hmax')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmax,...
-					'AlphaData', this.alphaData)
-				title 'Max of normalized height'
-			end
 
-			if strcmp(options.plotData, 'Hmean')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmean,...
-					'AlphaData', this.alphaData)
-				title 'Mean of normalized height'
-			end
-
-			if strcmp(options.plotData, 'Hmedian')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hmedian,...
-					'AlphaData', this.alphaData)
-				title 'Median of normalized height'
-			end
-
-			if strcmp(options.plotData, 'Hp25')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp25,...
-					'AlphaData', this.alphaData)
-				title '25th percentile of normalized height'
-			end
-
-			if strcmp(options.plotData, 'Hp75')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp75,...
-					'AlphaData', this.alphaData)
-				title '75th percentile of normalized height'
-			end
-
-			if strcmp(options.plotData, 'Hp95')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hp95,...
-					'AlphaData', this.alphaData)
-				title '95th percentile of normalized height'
-			end
-
-			if strcmp(options.plotData, 'PPR')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.PPR,...
-					'AlphaData', this.alphaData)
-				title 'Pulse penetration ratio'
-			end
-
-			if strcmp(options.plotData, 'Coeff_var_z')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Coeff_var_z,...
-					'AlphaData', this.alphaData)
-				title 'Coefficient of variation'
-			end
-
-			if strcmp(options.plotData, 'Hkurt')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hkurt,...
-					'AlphaData', this.alphaData)
-				title 'Kurtosis of normalized height'
-			end
-
-			if strcmp(options.plotData, 'Hskew')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hskew,...
-					'AlphaData', this.alphaData)
-				title 'Skewness of normalized height'
-			end
-
-			if strcmp(options.plotData, 'Hstd')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hstd,...
-					'AlphaData', this.alphaData)
-				title 'Standard deviation of normalized height'
-			end
-
-			if strcmp(options.plotData, 'Hvar')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.Hvar,...
-					'AlphaData', this.alphaData)
-				title 'Variance of normalized height'
-			end
+			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.(options.plotData),...
+				'AlphaData', this.alphaData)
+			title(this.plotTitles.(options.plotData))
 
 			colormap jet
 			colorbar
@@ -331,6 +375,64 @@ classdef dataFeatureExtractor
 			axis xy
 
 		end % end of function plotMetricRaster
+
+		function plotAllMetricRasters(this, options)
+			arguments
+				this (1,1) dataFeatureExtractor
+				options.colormap (1,:) string {mustBeMember(options.colormap,{'parula','turbo','hsv',...
+					'hot','cool','spring','summer','autumn','winter','gray','bone','copper',...
+					'pink','jet','lines','colorcube','prism','flag','white'})} = 'jet'
+			end
+ 
+			rasterNames = fieldnames(this.metricsRasters);
+			
+			for i = 1:numel(rasterNames)
+				figure
+				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.(rasterNames{i}),...
+					'AlphaData', this.alphaData)
+				title(this.plotTitles.(rasterNames{i}))
+				colormap(options.colormap)
+				colorbar
+				axis equal
+				axis xy
+			end
+
+		end % end of function plotAllMetricRasters
+
+		function exportMetricRaster(this, fileName, options)
+			arguments
+				this dataFeatureExtractor
+				fileName (1,:) string
+				options.exportLayer (1,:) string {mustBeMember(options.exportLayer,{'Hmax', 'Hmean',...
+					'Hmedian','Hp25','Hp75', 'Hp95'...
+					'PPR','DAM_z','BR_bellow_1','BR_1_2','BR_2_3','BR_above_3','BR_3_4','BR_4_5','BR_bellow_5','BR_5_20','BR_above_20' ...
+					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
+			end
+
+			exportName = this.exportTitles.(options.exportLayer) + fileName;
+			geotiffwrite(exportName, this.metricsRasters.(options.exportLayer),...
+				this.RR_new,"CoordRefSysCode",8353);
+			
+			fprintf("Metric " + options.exportLayer + " exported\n");
+		end
+
+		function exportAllMetricRasters(this, fileName)
+			arguments
+				this dataFeatureExtractor
+				fileName (1,:) string
+			end
+
+			rasterNames = fieldnames(this.metricsRasters);
+			
+			for i = 1:numel(rasterNames)
+				exportName = this.exportTitles.(rasterNames{i}) + fileName;
+				
+				geotiffwrite(exportName, this.metricsRasters.(rasterNames{i}),...
+				this.RR_new,"CoordRefSysCode",8353);
+			end
+		
+			fprintf("All metrics exported\n");
+		end
 		
 	end
 end
