@@ -7,8 +7,8 @@ clc;
 
 % download: https://drive.google.com/drive/folders/1EWlkqu3qofB5kB5QLcPkrFyJxFm2zBec?usp=sharing
 DATA_DIRECTORY = fullfile(MAIN_DIRECTORY, 'data');
-DTM_DIRECTORY  = fullfile(DATA_DIRECTORY, 'ExportDMR');
-PC_DIRECTORY   = fullfile(DATA_DIRECTORY, 'ExportMB');
+DTM_DIRECTORY  = fullfile(DATA_DIRECTORY, 'ExportDMR_BielyKriz');
+PC_DIRECTORY   = fullfile(DATA_DIRECTORY, 'ExportMB_BielyKriz');
 
 cd(MAIN_DIRECTORY);
 
@@ -66,7 +66,7 @@ fprintf("Average point count per pixel: %.2f\n", nPoints / nnz(~isnan(DTM(:))));
 % 3 -> Low Vegetation
 % 4 -> Medium Vegetation
 % 5 -> High Vegetation
-selectedClasses = [2, 3, 4, 5];
+selectedClasses = [3, 4, 5];
 	
 figure('Name', 'Point Cloud data')
 title 'Point Cloud data'
@@ -80,14 +80,6 @@ for i = 1:lasCount
 		end
 end
 hold off
-
-%%
-% cd(MAIN_DIRECTORY);
-% 
-% handle = dataHandler(DTM, rasterReference, ptCloud, ptAttributes);
-% handle = handle.meshPlane();
-% handle = handle.computePointCloudAttributes();
-% handle = handle.normalizePtCloud("method","DTM");
 
 %% Data preprocessor
 cd(MAIN_DIRECTORY);
@@ -106,44 +98,54 @@ preprocessor.plotPtCloud3D(colorMap, [2, 3, 4, 5],"useData","normalized")
 % handle.plotPtCloud3D(colorMap, [5],"useData","normalized")
 
 %% COMPUTE ALL METRICS FOR GIVEN POINT CLOUD
-% handle = handle.computeMetricRasters();
-
 featureExtractor = dataFeatureExtractor(rasterReference,... % original RasterReference
 										preprocessor.ptCloud_norm,... % normalized point cloud
 										preprocessor.ptAttributes_norm,... % and its attributes
-										2); % desired pixel size in meters
+										10); % desired pixel size in meters
 
+%%
 featureExtractor = featureExtractor.meshPlane();
-featureExtractor = featureExtractor.computeMetricRasters();
+[featureExtractor, time_1] = featureExtractor.computeMetricRasters();
+% % % % [featureExtractor, time_2] = featureExtractor.computeMetricRastersParallel(6);
+
+%% Kopia povodnych metrik
+metricRastersCopy = featureExtractor.metricsRasters;
 
 %% PLOT SELECTED METRIC
 figure
-% handle.plotMetricRaster("plotData","Hmax")
-featureExtractor.plotMetricRaster("plotData","Hmax")
+featureExtractor.plotMetricRaster("plotData","Hmedian")
 colormap jet
 % colormap hot
 colorbar
 axis equal
 axis xy
 
-%%
-handle.plotMetricRasters();
-%%
+%% PLOT ALL METRICS
+featureExtractor.plotAllMetricRasters("colormap","jet");
+
+%% CLIP RASTER VALUES IF NECESSARY
+% clip rasters: Coeff_var_z, Hkurt, Hskew, niekdy mozno aj Hvar
+featureExtractor = featureExtractor.clipMetricRaster("clipData","Coeff_var_z","percentile",97.5);
+featureExtractor = featureExtractor.clipMetricRaster("clipData","Hkurt","percentile",97.5);
+featureExtractor = featureExtractor.clipMetricRaster("clipData","Hskew","percentile",97.5);
+featureExtractor = featureExtractor.clipMetricRaster("clipData","Hvar","percentile",97.5);
+
+%% skusanie vykreslenia
 figure
-imagesc([handle.x1 handle.x2], [handle.y1 handle.y2], temp2,...
-	'AlphaData', handle.alphaData_DTM)
+imagesc([featureExtractor.x1 featureExtractor.x2],...
+		[featureExtractor.y1 featureExtractor.y2], temp2,...
+	'AlphaData', featureExtractor.alphaData)
 title '99th perc'
-colormap hot
+colormap jet
 colorbar
 axis equal
 axis xy
 
 %% EXPORT SELECTED METRIC TO .TIF FILE
-% handle.exportMetricRaster("data_lesSipka","exportLayer","Hstd");
+featureExtractor.exportMetricRaster("data1","exportLayer","Coeff_var_z");
 
 %% EXPORT ALL METRICS TO .TIF FILES
-handle.exportAllMetricRasters("data_lesBodiky2");
-
+featureExtractor.exportAllMetricRasters("data_BielyKriz_10x10m");
 %%
 % [H, R] = readgeoraster('Hmax.tif', 'OutputType', 'double');
 
