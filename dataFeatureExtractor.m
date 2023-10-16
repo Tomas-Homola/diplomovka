@@ -336,6 +336,193 @@ classdef dataFeatureExtractor
 			timePassed = time;
 		end % end of function computeMetricRasters
 
+		function [this, timePassed] = computeMetricRastersParallel(this, workers)
+			arguments
+				this (1,1) dataFeatureExtractor
+				workers (1,1) {mustBeNumeric, mustBeInRange(workers, 1, 6)}
+			end
+			% allocate space for metric rasters
+			% ECOSYSTEM HEIGHT
+			metricsRasters_Hmax = NaN(this.ny, this.nx);
+			metricsRasters_Hmean = NaN(this.ny, this.nx);
+			metricsRasters_Hmedian = NaN(this.ny, this.nx);
+			metricsRasters_Hp25 = NaN(this.ny, this.nx);
+			metricsRasters_Hp75 = NaN(this.ny, this.nx);
+			metricsRasters_Hp95 = NaN(this.ny, this.nx);
+
+			% ECOSYSTEM COVER
+			metricsRasters_PPR = NaN(this.ny, this.nx);
+			metricsRasters_DAM_z = NaN(this.ny, this.nx);
+			metricsRasters_BR_bellow_1 = NaN(this.ny, this.nx);
+			metricsRasters_BR_1_2 = NaN(this.ny, this.nx);
+			metricsRasters_BR_2_3 = NaN(this.ny, this.nx);
+			metricsRasters_BR_above_3 = NaN(this.ny, this.nx);
+			metricsRasters_BR_3_4 = NaN(this.ny, this.nx);
+			metricsRasters_BR_4_5 = NaN(this.ny, this.nx);
+			metricsRasters_BR_bellow_5 = NaN(this.ny, this.nx);
+			metricsRasters_BR_5_20 = NaN(this.ny, this.nx);
+			metricsRasters_BR_above_20 = NaN(this.ny, this.nx);
+
+			% ECOSYSTEM STRUCTURAL COMPLEXITY
+			metricsRasters_Coeff_var_z = NaN(this.ny, this.nx);
+			metricsRasters_Hkurt = NaN(this.ny, this.nx);
+			metricsRasters_Hskew = NaN(this.ny, this.nx);
+			metricsRasters_Hstd = NaN(this.ny, this.nx);
+			metricsRasters_Hvar = NaN(this.ny, this.nx);
+				
+			time = tic;
+
+			% find pixel indices for all points within mesh
+			this.ptCloud_norm_pixels = cell(this.lasCount, 1);
+			for i = 1:this.lasCount
+				xpt = this.ptCloud_norm{i}.Location(:, 1);
+				ypt = this.ptCloud_norm{i}.Location(:, 2);
+
+				% find closest pixel centre of each point
+				x_idx = interp1(this.xc, 1:this.nx, xpt, 'nearest', 'extrap');
+                y_idx = interp1(this.yc, 1:this.ny, ypt, 'nearest', 'extrap');
+                this.ptCloud_norm_pixels{i} = sub2ind([this.ny, this.nx], y_idx, x_idx); % pixel indices of all points in ptCloud
+
+			end % for cycle end
+
+			nPixels = this.numOfMeshPixels;
+			lasCount_ = this.lasCount;
+
+			% compute metrics
+			parfor (i = 1:nPixels, workers) % iterate over all pixels of the mesh
+				Z = [];
+				groundPoints = 0;
+				allPixelPoints = 0;
+
+% 				fprintf("pixel: %d/%d\n", i, nPixels)
+				% find all points belonging to pixel "i"
+				for j = 1:lasCount_ % iterate over all point clouds
+					% find vegetation points
+					isVegetation = this.ptAttributes_norm{j}.Classification == this.VEG_LOW | ...
+								   this.ptAttributes_norm{j}.Classification == this.VEG_MED | ...
+								   this.ptAttributes_norm{j}.Classification == this.VEG_HIGH;
+					% find points that belong to pixel "i"
+					isInPixel = this.ptCloud_norm_pixels{j} == i;
+
+					% select only vegetation points belonging to pixel "i"
+					selectedPoints = isInPixel & isVegetation;
+
+					Z = [Z; this.ptCloud_norm{j}.Location(selectedPoints, 3)];
+					
+					% find ground points which belong to pixel "i"
+					isGround = this.ptAttributes_norm{j}.Classification == this.GROUND;
+					selectedPoints = isInPixel & isGround;
+					
+% 					if nnz(selectedPoints) ~= 0
+% 						fprintf("...\n");
+% 					end
+
+					% find how many ground points there are within pixel "i"
+					groundPoints = groundPoints + nnz(selectedPoints);
+					% find how many points in total there are within pixel "i"
+					allPixelPoints = allPixelPoints + nnz(isInPixel);
+				end
+				
+				% if no points are found within pixel "i" -> continue to next pixel
+				if allPixelPoints == 0
+					continue;
+				end
+				
+				if isempty(Z)
+					Z = 0;
+				end
+
+				% compute metrics
+				maxZ     = max(Z);
+				meanZ    = mean(Z);
+				medianZ  = median(Z);
+				p25Z     = prctile(Z, 25);
+				p75Z     = prctile(Z, 75);
+				p95Z     = prctile(Z, 95);
+
+				PPR         = groundPoints / allPixelPoints;
+				DAM_z       = nnz(Z > meanZ);
+				BR_bellow_1 = nnz(Z < 1) / length(Z);
+				BR_1_2      = nnz (Z > 1 & Z < 2) / length(Z);
+				BR_2_3      = nnz (Z > 2 & Z < 3) / length(Z);
+				BR_above_3  = nnz (Z > 3) / length(Z);
+				BR_3_4      = nnz (Z > 3 & Z < 4) / length(Z);
+				BR_4_5      = nnz (Z > 4 & Z < 5) / length(Z);
+				BR_bellow_5 = nnz (Z < 5) / length(Z);
+				BR_5_20     = nnz (Z > 5 & Z < 20) / length(Z);
+				BR_above_20 = nnz (Z > 20) / length(Z);
+
+				kurtZ    = kurtosis(Z);
+				skewZ    = skewness(Z);
+				varZ     = var(Z);
+				stdZ     = std(Z);
+				coefVarZ = stdZ / meanZ;
+
+				% save metrics to appropriate rasters
+				metricsRasters_Hmax(i)     = maxZ;
+				metricsRasters_Hmean(i)    = meanZ;
+				metricsRasters_Hmedian(i)  = medianZ;
+				metricsRasters_Hp25(i)     = p25Z;
+				metricsRasters_Hp75(i)     = p75Z;
+				metricsRasters_Hp95(i)     = p95Z;
+				
+				metricsRasters_PPR(i)		   = PPR;
+				metricsRasters_DAM_z(i)	   = DAM_z;
+				metricsRasters_BR_bellow_1(i) = BR_bellow_1;
+				metricsRasters_BR_1_2(i)      = BR_1_2;
+				metricsRasters_BR_2_3(i)      = BR_2_3;
+				metricsRasters_BR_above_3(i)  = BR_above_3;
+				metricsRasters_BR_3_4(i)      = BR_3_4;
+				metricsRasters_BR_4_5(i)      = BR_4_5;
+				metricsRasters_BR_bellow_5(i) = BR_bellow_5;
+				metricsRasters_BR_5_20(i)     = BR_5_20;
+				metricsRasters_BR_above_20(i) = BR_above_20;
+
+				metricsRasters_Coeff_var_z(i) = coefVarZ;
+				metricsRasters_Hkurt(i)       = kurtZ;
+				metricsRasters_Hskew(i)       = skewZ;
+				metricsRasters_Hstd(i)        = stdZ;
+				metricsRasters_Hvar(i)        = varZ;
+
+			end
+
+			% ECOSYSTEM HEIGHT
+			this.metricsRasters.Hmax    = metricsRasters_Hmax;
+			this.metricsRasters.Hmean   = metricsRasters_Hmean;
+			this.metricsRasters.Hmedian = metricsRasters_Hmedian;
+			this.metricsRasters.Hp25    = metricsRasters_Hp25;
+			this.metricsRasters.Hp75    = metricsRasters_Hp75;
+			this.metricsRasters.Hp95    = metricsRasters_Hp95;
+
+			% ECOSYSTEM COVER
+			this.metricsRasters.PPR         = metricsRasters_PPR;
+			this.metricsRasters.DAM_z       = metricsRasters_DAM_z;
+			this.metricsRasters.BR_bellow_1 = metricsRasters_BR_bellow_1;
+			this.metricsRasters.BR_1_2      = metricsRasters_BR_1_2;
+			this.metricsRasters.BR_2_3      = metricsRasters_BR_2_3;
+			this.metricsRasters.BR_above_3  = metricsRasters_BR_above_3;
+			this.metricsRasters.BR_3_4      = metricsRasters_BR_3_4;
+			this.metricsRasters.BR_4_5      = metricsRasters_BR_4_5;
+			this.metricsRasters.BR_bellow_5 = metricsRasters_BR_bellow_5;
+			this.metricsRasters.BR_5_20     = metricsRasters_BR_5_20;
+			this.metricsRasters.BR_above_20 = metricsRasters_BR_above_20;
+
+			% ECOSYSTEM STRUCTURAL COMPLEXITY
+			this.metricsRasters.Coeff_var_z = metricsRasters_Coeff_var_z;
+			this.metricsRasters.Hkurt       = metricsRasters_Hkurt;
+			this.metricsRasters.Hskew       = metricsRasters_Hskew;
+			this.metricsRasters.Hstd        = metricsRasters_Hstd;
+			this.metricsRasters.Hvar        = metricsRasters_Hvar;
+
+			time = toc(time);
+			fprintf("Compute rasters in parallel done in %0.3f s\n", time);
+
+			this.alphaData = ones(size(this.metricsRasters.Hmax)); % vytvorenie pola, kde budu ulozene udaje o alpha pre kazdy pixel
+			this.alphaData(isnan(this.metricsRasters.Hmax)) = 0; % tam, kde su NaN hodnoty, tak budu priehladne
+
+			timePassed = time;
+		end % end of function computeMetricRasters
+
 		function this = clipMetricRaster(this, options)
 			arguments
 				this (1,1) dataFeatureExtractor
@@ -387,7 +574,7 @@ classdef dataFeatureExtractor
 			rasterNames = fieldnames(this.metricsRasters);
 			
 			for i = 1:numel(rasterNames)
-				figure
+				figure('WindowState','maximized')
 				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.(rasterNames{i}),...
 					'AlphaData', this.alphaData)
 				title(this.plotTitles.(rasterNames{i}))
