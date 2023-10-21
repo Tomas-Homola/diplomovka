@@ -530,7 +530,7 @@ classdef dataFeatureExtractor
 					'Hmedian','Hp25','Hp75', 'Hp95'...
 					'PPR','DAM_z','BR_bellow_1','BR_1_2','BR_2_3','BR_above_3','BR_3_4','BR_4_5','BR_bellow_5','BR_5_20','BR_above_20' ...
 					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
-				options.percentile (1,1) {mustBeNumeric, mustBeInRange(options.percentile, 0, 100)} = 99
+				options.percentile (1,1) {mustBeNumeric, mustBeInRange(options.percentile, 0, 100)} = 97.5
 			end
 			
 			chosenRaster = this.metricsRasters.(options.clipData);
@@ -546,18 +546,28 @@ classdef dataFeatureExtractor
 		function plotMetricRaster(this, options)
 			arguments
 				this (1,1) dataFeatureExtractor
-				options.plotData (1,:) string {mustBeMember(options.plotData,{'Hmax', 'Hmean',...
-					'Hmedian','Hp25','Hp75', 'Hp95'...
-					'PPR','DAM_z','BR_bellow_1','BR_1_2','BR_2_3','BR_above_3','BR_3_4','BR_4_5','BR_bellow_5','BR_5_20','BR_above_20' ...
-					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
+				options.plotData (1,:) string {mustBeMember(options.plotData,["Hmax", "Hmean",...
+					"Hmedian","Hp25","Hp75", "Hp95"...
+					"PPR","DAM_z","BR_bellow_1","BR_1_2","BR_2_3","BR_above_3","BR_3_4","BR_4_5","BR_bellow_5","BR_5_20","BR_above_20" ...
+					"Coeff_var_z", "Hkurt", "Hskew", "Hstd", "Hvar"])}
+				options.clipPercentile (1,1) {mustBeNumeric, mustBeInRange(options.clipPercentile, 0, 100)} = 97.5
 			end
 
-			imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.(options.plotData),...
+			% save copy of raster to be ploted
+			chosenRaster = this.metricsRasters.(options.plotData);
+
+			if ismember(options.plotData, ["Coeff_var_z", "Hkurt", "Hskew", "Hvar"])
+				% compute chosen percentile for clipping
+				chosenPercentile = prctile(chosenRaster(:), options.clipPercentile);
+
+				% clip raster data according to the chosen percentile
+				chosenRaster(chosenRaster > chosenPercentile) = chosenPercentile;
+			end
+			
+			imagesc([this.x1 this.x2], [this.y1 this.y2], chosenRaster,...
 				'AlphaData', this.alphaData)
 			title(this.plotTitles.(options.plotData))
-
-			colormap jet
-			colorbar
+			
 			axis equal
 			axis xy
 
@@ -569,19 +579,22 @@ classdef dataFeatureExtractor
 				options.colormap (1,:) string {mustBeMember(options.colormap,{'parula','turbo','hsv',...
 					'hot','cool','spring','summer','autumn','winter','gray','bone','copper',...
 					'pink','jet','lines','colorcube','prism','flag','white'})} = 'jet'
+				options.plotCurves = {}
 			end
  
 			rasterNames = fieldnames(this.metricsRasters);
 			
-			for i = 1:numel(rasterNames)
+			for i = numel(rasterNames):-1:1
 				figure('WindowState','maximized')
-				imagesc([this.x1 this.x2], [this.y1 this.y2], this.metricsRasters.(rasterNames{i}),...
-					'AlphaData', this.alphaData)
-				title(this.plotTitles.(rasterNames{i}))
+				plotMetricRaster(this,"plotData",rasterNames{i});
 				colormap(options.colormap)
 				colorbar
 				axis equal
 				axis xy
+
+				if ~isempty(options.plotCurves)
+					plotCurves(options.plotCurves,"Color",'magenta','MarkerSize',20)
+				end
 			end
 
 		end % end of function plotAllMetricRasters
