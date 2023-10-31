@@ -87,16 +87,42 @@ for i = 1:length(curves) % iterate through all .KML curves
 	
 	fprintf("aaaa\n");
 	% find names of .LAZ files to load for the i-th curve
-	for j = 1:length(foundLots)
+	for j = 1:length(foundLots) % iterate over all found LOTs
 		FOOTPRINTS_curves = loadFOOTPRINTS(SHP_FOOTPRINTS{foundLots(j)});
+		fprintf("Footprints loaded\n");
 		
-		% TODO: zistenie, kam patri i-ta krivka vramci footprints
+		for k = 1:length(FOOTPRINTS_curves) % iterate over all footprints within found j-th LOT
+
+			intersection = intersect(curves{i}, FOOTPRINTS_curves{k,1});
+
+			if isempty(intersection.Vertices) % if i-th .KML curve does not intersect with j-th LOT curve -> continue
+				continue;
+			end
+
+			% save found .LAZ file name
+			foundLazFiles{i,end + 1} = FOOTPRINTS_curves{k,2};
+		end
+		
+	end
+
+	fprintf("Found .LAZ files:\n");
+	for j = 1:length(foundLazFiles{i})
+		fprintf("%s\n", foundLazFiles{i,j});
 	end
 
 
 end % end i
 
-
+%%
+figure
+hold on
+for i = 1:length(FOOTPRINTS_curves)
+	plot(FOOTPRINTS_curves{i,1},"LineWidth",0.1,"FaceAlpha",0.2)
+end
+plot(curves{1},"LineWidth",5,"EdgeColor","red")
+plot(curves{2},"LineWidth",5,"EdgeColor","red")
+hold off
+axis equal
 
 
 
