@@ -71,7 +71,7 @@ LOTS_curves = loadLOTS(SHP_ALL_LOTS); % table of curves for
 fprintf("LOTs curves loaded\n");
 
 for i = 1:length(curves) % iterate through all .KML curves
-
+	foundLots = []; % cell of strings of found LOTS where the curves{i} lies inside
 	% find indices of LOTs where the i-th .KML curve belongs to
 	for j = 1:length(LOTS_curves) % iterate through all LOT curves
 		% find intersection of i-th .KML curve with j-th LOT
@@ -87,6 +87,8 @@ for i = 1:length(curves) % iterate through all .KML curves
 	
 	fprintf("aaaa\n");
 	% find names of .LAZ files to load for the i-th curve
+	foundLazFiles{i} = {};
+	lasFileFound = 0;
 	for j = 1:length(foundLots) % iterate over all found LOTs
 		FOOTPRINTS_curves = loadFOOTPRINTS(SHP_FOOTPRINTS{foundLots(j)});
 		fprintf("Footprints loaded\n");
@@ -98,33 +100,50 @@ for i = 1:length(curves) % iterate through all .KML curves
 			if isempty(intersection.Vertices) % if i-th .KML curve does not intersect with j-th LOT curve -> continue
 				continue;
 			end
-
+		
 			% save found .LAZ file name
-			foundLazFiles{i,end + 1} = FOOTPRINTS_curves{k,2};
+			lasFileFound = lasFileFound + 1;
+			foundLazFiles{i}{lasFileFound}.poly = FOOTPRINTS_curves{k,1};
+			foundLazFiles{i}{lasFileFound}.lazName = FOOTPRINTS_curves{k,2};
 		end
 		
 	end
 
-	fprintf("Found .LAZ files:\n");
-	for j = 1:length(foundLazFiles{i})
-		fprintf("%s\n", foundLazFiles{i,j});
-	end
+% 	fprintf("Found .LAZ files:\n");
+% 	for j = 1:length(foundLazFiles{i})
+% 		fprintf("%s\n", foundLazFiles{i}{j});
+% 	end
 
 
 end % end i
 
 %%
-figure
-hold on
-for i = 1:length(FOOTPRINTS_curves)
-	plot(FOOTPRINTS_curves{i,1},"LineWidth",0.1,"FaceAlpha",0.2)
+for i = 1:length(curves)
+	fprintf("Found .LAZ files for curve %d:\n", i);
+	for j = 1:length(foundLazFiles{i})
+	fprintf("%s\n", foundLazFiles{i}{j}.lazName);
+	end
 end
-plot(curves{1},"LineWidth",5,"EdgeColor","red")
-plot(curves{2},"LineWidth",5,"EdgeColor","red")
-hold off
-axis equal
 
+%%
 
+%%
+% plot(curves{2},"LineWidth",5,"EdgeColor","red")
+for c = 1:length(curves)
+	figure
+	hold off
+	axis equal
+	hold on
+	plot(curves{c},"LineWidth",5,"EdgeColor","red")
+	for i = 1:length(foundLazFiles{c})
+		plot(foundLazFiles{c}{i}{1});
+	end
+
+end
+%%
+L = linspace(0,2*pi,6);
+xv = cos(L)';
+yv = sin(L)';
 
 
 
