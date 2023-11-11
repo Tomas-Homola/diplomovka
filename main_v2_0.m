@@ -126,8 +126,6 @@ for i = 1:length(curves)
 end
 
 %%
-
-%%
 % plot(curves{2},"LineWidth",5,"EdgeColor","red")
 for c = 1:length(curves)
 	figure
@@ -136,15 +134,50 @@ for c = 1:length(curves)
 	hold on
 	plot(curves{c},"LineWidth",5,"EdgeColor","red")
 	for i = 1:length(foundLazFiles{c})
-		plot(foundLazFiles{c}{i}{1});
+		plot(foundLazFiles{c}{i}.poly);
 	end
 
 end
 %%
-L = linspace(0,2*pi,6);
-xv = cos(L)';
-yv = sin(L)';
+[xlim, ylim] = curves{1}.boundingbox;
+BB_width = abs(xlim(2)-xlim(1));
+BB_height = abs(ylim(2) - ylim(1));
+h = 10;
+n = 1;
+omega_width = ceil(BBwidth / h) * h + n*h;
+omega_height = ceil(BB_height / h) * h + n*h;
 
+% fprintf("BB width: %.2f -> omega width: %.2f\nBB height: %.2f -> omega height: %.2f\n",...
+% 	BB_width, omega_width, BB_height, omega_height);
+
+offset_x = (omega_width - BB_width) / 2;
+offset_y = (omega_height - BB_height) / 2;
+
+x = curves{1}.Vertices(:,1);
+y = curves{1}.Vertices(:,2);
+
+x_new = [xlim(1) - offset_x, xlim(2) + offset_x, xlim(2) + offset_x, xlim(1) - offset_x];
+y_new = [ylim(2) + offset_y, ylim(2) + offset_y, ylim(1) - offset_y, ylim(1) - offset_y];
+
+omega = polyshape(x_new, y_new);
+[xlim_new, ylim_new] = omega.boundingbox;
+
+randX = xlim_new(1) + (xlim_new(2) - xlim_new(1)) * rand(5000,1);
+randY = ylim_new(1) + (ylim_new(2) - ylim_new(1)) * rand(5000,1);
+randPoints = [randX, randY];
+
+[in, on] = inpolygon(randX, randY, x, y);
+
+figure
+hold on
+scatter(randX(in),randY(in),'.g')
+scatter(randX(~in),randY(~in),0.1,'.r')
+scatter(randX(on),randY(on),20,'*b')
+
+plot(curves{1}, "EdgeColor", "blue", "FaceAlpha", 0.05, "FaceColor","blue")
+plot(omega,"FaceAlpha",0,"LineStyle","-")
+hold off
+axis equal
 
 
 
