@@ -85,17 +85,17 @@ for i = 1:length(curves) % iterate through all .KML curves
 
 	end % end j
 	
-	fprintf("aaaa\n");
+% 	fprintf("aaaa\n");
 	% find names of .LAZ files to load for the i-th curve
 	foundLazFiles{i} = {};
 	lasFileFound = 0;
 	for j = 1:length(foundLots) % iterate over all found LOTs
 		FOOTPRINTS_curves = loadFOOTPRINTS(SHP_FOOTPRINTS{foundLots(j)});
-		fprintf("Footprints loaded\n");
+% 		fprintf("Footprints loaded\n");
 		
 		for k = 1:length(FOOTPRINTS_curves) % iterate over all footprints within found j-th LOT
 
-			intersection = intersect(curves{i}, FOOTPRINTS_curves{k,1});
+			intersection = intersect(curves{i}, FOOTPRINTS_curves{k}.poly);
 
 			if isempty(intersection.Vertices) % if i-th .KML curve does not intersect with j-th LOT curve -> continue
 				continue;
@@ -103,8 +103,8 @@ for i = 1:length(curves) % iterate through all .KML curves
 		
 			% save found .LAZ file name
 			lasFileFound = lasFileFound + 1;
-			foundLazFiles{i}{lasFileFound}.poly = FOOTPRINTS_curves{k,1};
-			foundLazFiles{i}{lasFileFound}.lazName = FOOTPRINTS_curves{k,2};
+			foundLazFiles{i}{lasFileFound}.poly = FOOTPRINTS_curves{k}.poly;
+			foundLazFiles{i}{lasFileFound}.lazName = FOOTPRINTS_curves{k}.fileName;
 		end
 		
 	end
@@ -117,7 +117,7 @@ for i = 1:length(curves) % iterate through all .KML curves
 
 end % end i
 
-%%
+%% PRINT FOUND .LAZ FILES
 for i = 1:length(curves)
 	fprintf("Found .LAZ files for curve %d:\n", i);
 	for j = 1:length(foundLazFiles{i})
@@ -125,7 +125,7 @@ for i = 1:length(curves)
 	end
 end
 
-%%
+%% PLOT KML CURVE AND FOUND FOOTPRINTS
 % plot(curves{2},"LineWidth",5,"EdgeColor","red")
 for c = 1:length(curves)
 	figure
@@ -144,7 +144,7 @@ BB_width = abs(xlim(2)-xlim(1));
 BB_height = abs(ylim(2) - ylim(1));
 h = 10;
 n = 1;
-omega_width = ceil(BBwidth / h) * h + n*h;
+omega_width = ceil(BB_width / h) * h + n*h;
 omega_height = ceil(BB_height / h) * h + n*h;
 
 % fprintf("BB width: %.2f -> omega width: %.2f\nBB height: %.2f -> omega height: %.2f\n",...
@@ -170,14 +170,51 @@ randPoints = [randX, randY];
 
 figure
 hold on
-scatter(randX(in),randY(in),'.g')
-scatter(randX(~in),randY(~in),0.1,'.r')
-scatter(randX(on),randY(on),20,'*b')
+% scatter(randX(in),randY(in),'.g')
+% scatter(randX(~in),randY(~in),0.1,'.r')
+% scatter(randX(on),randY(on),20,'*b')
 
 plot(curves{1}, "EdgeColor", "blue", "FaceAlpha", 0.05, "FaceColor","blue")
-plot(omega,"FaceAlpha",0,"LineStyle","-")
-hold off
+plot(omega,"FaceAlpha",0,"LineStyle","-","LineWidth",2)
 axis equal
+
+x1 = xlim_new(1);
+x2 = xlim_new(2);
+y1 = ylim_new(1);
+y2 = ylim_new(2);
+
+X = x1:h:x2;
+Y = y1:h:y2;
+
+% specification of pixel centers (interpolation points for interp1)
+nx = omega_width / h;
+ny = omega_height / h;
+
+xc = linspace(x1 + h/2, x2 - h/2, nx);
+yc = linspace(y1 + h/2, y2 - h/2, ny);
+[Xc, Yc] = meshgrid(xc, yc);
+
+for i = 1:length(X)
+	plot([X(i) X(i)],[Y(1) Y(end)],...
+		'Color', "#EDB120", 'LineWidth', 0.5,'LineStyle','-') %y grid lines
+end
+
+for i = 1:length(Y)
+	plot([X(1) X(end)],[Y(i) Y(i)],...
+		'Color', "#EDB120", 'LineWidth', 0.5,'LineStyle','-') %x grid lines
+end
+
+[XYin, XYon] = inpolygon(Xc, Yc, x, y);
+
+scatter(Xc(XYin), Yc(XYin),5, "*g")
+scatter(Xc(~XYin), Yc(~XYin),5, "*r")
+
+hold off
+
+legend('KML curve','\Omega', '\Omega discr')
+
+fprintf("In square for n = %d -> %d pixels\n", n, nnz(XYin))
+
 
 
 
