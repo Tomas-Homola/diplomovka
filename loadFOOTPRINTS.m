@@ -9,7 +9,7 @@ function FOOTPRINTS_curves = loadFOOTPRINTS(SHP_filePath)
 	shapeFile = shaperead(SHP_filePath);
 
 	numCurves = numel(shapeFile);
-	FOOTPRINTS_curves = cell(numCurves, 2);
+	FOOTPRINTS_curves = cell(numCurves, 1);
 
 	for i = 1:numCurves
 		% get polygon coordinates
@@ -21,8 +21,8 @@ function FOOTPRINTS_curves = loadFOOTPRINTS(SHP_filePath)
 		fileName = strcat(fileName(1:end-4),'_jtsk03_bpv.laz');
 		
 		% save polygon and LOT number to cell
-		FOOTPRINTS_curves{i,1} = polyshape(X, Y);
-		FOOTPRINTS_curves{i,2} = fileName;
+		FOOTPRINTS_curves{i}.poly = polyshape(X, Y);
+		FOOTPRINTS_curves{i}.fileName = fileName;
 	end
 end
 
