@@ -6,13 +6,13 @@ function plotCurvesPolyshape(curves)
 	if (size(curves,2) == 2)
 		hold on
 		for i = 1:length(curves)
-			plot(curves{i,1});
+			plot(curves{i}.poly);
 		end
 		hold off
 	else
 		hold on
 		for i = 1:length(curves)
-			plot(curves{i});
+			plot(curves{i}.poly);
 		end
 		hold off
 	end
