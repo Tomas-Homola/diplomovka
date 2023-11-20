@@ -64,7 +64,7 @@ classdef dataFeatureExtractor
 			this.numOfMeshPixels = this.ny * this.nx;
 			
 			this.x1 = RR_orig.XWorldLimits(1);
-            this.x2 = this.x1 + (this.nx-1)*this.h; % ci to je dobre?
+            this.x2 = this.x1 + (this.nx-1)*this.h;
             this.y1 = RR_orig.YWorldLimits(1);
             this.y2 = this.y1 + (this.ny-1)*this.h;
 
@@ -73,6 +73,11 @@ classdef dataFeatureExtractor
 
 			this.RR_new.ProjectedCRS = projcrs(8353);
 
+			this = setMetricRastersNames(this);
+
+		end % end of constructor
+
+		function this = setMetricRastersNames(this)
 			% initialize structures for metric rasters and plot titles
 			this.metricsRasters = struct;
 
@@ -130,7 +135,7 @@ classdef dataFeatureExtractor
 			this.exportTitles.Hstd        = '24_Hstd_';
 			this.exportTitles.Hvar        = '25_Hvar_';
 
-		end % end of constructor
+		end
 
 		function this = meshPlane(this, padding)
 			arguments
@@ -295,6 +300,11 @@ classdef dataFeatureExtractor
 
 				kurtZ    = kurtosis(Z);
 				skewZ    = skewness(Z);
+
+				if kurtZ > 7.5 || kurtZ < 1.5
+
+					fprintf("aaaa");
+				end
 				varZ     = var(Z);
 				stdZ     = std(Z);
 				coefVarZ = stdZ / meanZ;
