@@ -14,6 +14,7 @@ classdef dataPreprocessorCurve
         x, y                            % pixel edge coordinates
         xc, yc, Xc, Yc                  % pixel center coordinates (and meshgrids)
 		Omega polyshape					% polyshape object representing mesh
+		nPixels
 
 		curve polyshape
         
@@ -25,8 +26,7 @@ classdef dataPreprocessorCurve
 		ptAttributes_0					% cell of classification for all points clouds
 		ptAttributes_norm
 
-		ptCloud_0_pixels				% DTM pixel indices of all points in ptCloud
-		ptCloud_norm_pixels
+		ptCloud_pixels
 
 		GROUND = 2
 		VEG_LOW = 3
@@ -74,6 +74,7 @@ classdef dataPreprocessorCurve
 
 			this.nx = Omega_width;%/ 1;
 			this.ny = Omega_height;% / 1;
+			this.nPixels = this.ny * this.nx;
 
 			this.h = 1;
 
@@ -88,6 +89,9 @@ classdef dataPreprocessorCurve
 		end % end of constructor
 		
 		function this = filterPointCloud(this, ptCloud, ptAttributes)
+			this.ptCloud_0 = ptCloud;
+			this.ptAttributes_0 = ptAttributes;
+			
 			% kontrola, ci je priradeny nejaky point cloud
 			if isempty(this.ptCloud_0)
 				error('No point cloud available');
@@ -96,24 +100,30 @@ classdef dataPreprocessorCurve
 			fprintf('Filtering point cloud ... ');
             time = tic;
 
-			this.ptCloud_0 = ptCloud;
-			this.ptAttributes_0 = ptAttributes;
-
 			% 2.1), 2.2)
 			selectedPoints = this.ptCloud_0.Location(:,1) >= this.x1 &... only points within Omega
 							 this.ptCloud_0.Location(:,1) <= this.x2 &...
 							 this.ptCloud_0.Location(:,2) >= this.y1 &...
 							 this.ptCloud_0.Location(:,2) <= this.y2 &...
 							 ( ... only vegetation and ground points
-							 this.ptAttributes_0.Classification == this.VEG_LOW  |... only vegetation
+							 this.ptAttributes_0.Classification == this.GROUND   |... ground points
+							 this.ptAttributes_0.Classification == this.VEG_LOW  |... vegetation
 							 this.ptAttributes_0.Classification == this.VEG_MED  |...
-							 this.ptAttributes_0.Classification == this.VEG_HIGH |...
-							 this.ptAttributes_0.Classification == this.GROUND ... and ground points
+							 this.ptAttributes_0.Classification == this.VEG_HIGH  ...
 							 );
 
-			this.ptCloud_norm      = select(this.ptCloud_0, selectedPoints);
-			this.ptAttributes_norm = lidarPointAttributes("Classification",...
+			this.ptCloud_0      = select(this.ptCloud_0, selectedPoints);
+			this.ptAttributes_0 = lidarPointAttributes("Classification",...
 														  this.ptAttributes_0.Classification(selectedPoints));
+			this.ptAttributes_norm = this.ptAttributes_0;
+
+			xpt = this.ptCloud_0.Location(:, 1);
+			ypt = this.ptCloud_0.Location(:, 2);
+
+			% find closest pixel centre of each point
+			x_idx = interp1(this.xc, 1:this.nx, xpt, 'nearest', 'extrap');
+			y_idx = interp1(this.yc, 1:this.ny, ypt, 'nearest', 'extrap');
+			this.ptCloud_pixels = sub2ind([this.ny, this.nx], y_idx, x_idx); % pixel indices of all points in ptCloud
 			
 			time = toc(time);
 			fprintf('done in %0.2f s\n', time)
@@ -126,48 +136,26 @@ classdef dataPreprocessorCurve
 			end
 			
 			time = tic;
+
+			X = this.ptCloud_0.Location(:, 1);
+			Y = this.ptCloud_0.Location(:, 2);
+			Z = this.ptCloud_0.Location(:, 3);
 			
-			if strcmp(options.method, "DTM")
-				for i = 1:this.lasCount
-% 					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
-					
-					X = this.ptCloud_norm{i}.Location(:, 1);
-					Y = this.ptCloud_norm{i}.Location(:, 2);
-					Z = this.ptCloud_norm{i}.Location(:, 3);
-					
-					Z = Z - this.DTM(this.ptCloud_norm_pixels{i});
-
-					Z(Z < 0) = 0;
-	
-					this.ptCloud_norm{i} = pointCloud([X, Y, Z], "Intensity", this.ptCloud_norm{i}.Intensity);
-				end
-			end
-
-			if strcmp(options.method, "LowestPoint")
+			for j = 1:this.nPixels % iterate through each pixel of mesh
 				
-				for i = 1:this.lasCount % iterate over all point clouds
-% 					vegetation = ismember(this.ptAttributes{i}.Classification, [this.VEG_LOW, this.VEG_MED, this.VEG_HIGH]);
-					
-					X = this.ptCloud_norm{i}.Location(:, 1);
-					Y = this.ptCloud_norm{i}.Location(:, 2);
-					Z = this.ptCloud_norm{i}.Location(:, 3);
-					% TODO: pridat "Intensity" do normalizovaneho point cloudu
-
-					for j = 1:length(this.DTM(:)) % iterate through each pixel of mesh
-						pixelPoints = this.ptCloud_norm_pixels{i}(:) == j;
-						if nnz(pixelPoints) == 0
-							continue;
-						end
-						
-						Z(pixelPoints) = Z(pixelPoints) - min(Z(pixelPoints));
-					end
-		
-					this.ptCloud_norm{i} = pointCloud([X, Y, Z], "Intensity", this.ptCloud_norm{i}.Intensity);
+				pixelPoints = this.ptCloud_pixels(:) == j;
+				if (nnz(pixelPoints) == 0)
+					continue;
 				end
+				
+				minZ = min(Z(pixelPoints));
+				Z(pixelPoints) = Z(pixelPoints) - minZ;
 			end
-			
+
+			this.ptCloud_norm = pointCloud([X, Y, Z], "Intensity", this.ptCloud_0.Intensity);
+
 			time = toc(time);
-			
+
 			fprintf("Normalize points done in %0.3f s\n", time);
 		end % end of normalize point cloud
 
@@ -190,9 +178,9 @@ classdef dataPreprocessorCurve
 					'Color', "#EDB120", 'LineWidth', 0.5,'LineStyle','-') %x grid lines
 			end
 
-			x = this.curve.Vertices(:,1);
-			y = this.curve.Vertices(:,2);
-			[XYin, ~] = inpolygon(this.Xc, this.Yc, x , y);
+			x_ = this.curve.Vertices(:,1);
+			y_ = this.curve.Vertices(:,2);
+			[XYin, ~] = inpolygon(this.Xc, this.Yc, x_ , y_);
 
 			scatter(this.Xc(XYin),  this.Yc(XYin), 5, "*g")
 			scatter(this.Xc(~XYin), this.Yc(~XYin),5, "*r")
@@ -209,35 +197,25 @@ classdef dataPreprocessorCurve
 				options.useData (1,:) string {mustBeMember(options.useData,{'original', 'normalized'})} = 'original'
 			end
 
-			if this.lasCount == 0
-				error('Nothing to plot')
-			end
-        
-			% plot only points from selected classes
-			hold on
+
 
 			if strcmp(options.useData, 'original')
 
-				for i = 1:this.lasCount
-					classMember = ismember(this.ptAttributes_0{i}.Classification, selectedClasses);
-					if any(classMember)
-						colorData = reshape(label2rgb(this.ptAttributes_0{i}.Classification, colorMap, 'k'), [], 3);
-						pcshow(this.ptCloud_0{i}.Location(classMember, :), colorData(classMember, :))
-					else
-						warning('Nothing to plot in point cloud %d', i);
-					end
+				classMember = ismember(this.ptAttributes_0.Classification, selectedClasses);
+				if any(classMember)
+					colorData = reshape(label2rgb(this.ptAttributes_0.Classification, colorMap, 'k'), [], 3);
+					pcshow(this.ptCloud_0.Location(classMember, :), colorData(classMember, :))
+				else
+					warning('Nothing to plot in point cloud');
 				end
-			
+
 			elseif strcmp(options.useData, 'normalized')
-				
-				for i = 1:this.lasCount
-					classMember = ismember(this.ptAttributes_norm{i}.Classification, selectedClasses);
-					if any(classMember)
-						colorData = reshape(label2rgb(this.ptAttributes_norm{i}.Classification, colorMap, 'k'), [], 3);
-						pcshow(this.ptCloud_norm{i}.Location(classMember, :), colorData(classMember, :))
-					else
-						warning('Nothing to plot in point cloud %d', i);
-					end
+				classMember = ismember(this.ptAttributes_norm.Classification, selectedClasses);
+				if any(classMember)
+					colorData = reshape(label2rgb(this.ptAttributes_norm.Classification, colorMap, 'k'), [], 3);
+					pcshow(this.ptCloud_norm.Location(classMember, :), colorData(classMember, :))
+				else
+					warning('Nothing to plot in point cloud');
 				end
 			end
 			
