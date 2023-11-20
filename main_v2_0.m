@@ -143,7 +143,7 @@ time = toc;
 fprintf("LAZ files for all curves found, elapsed time: %.2f s\n", time);
 
 %% PRINT FOUND .LAZ FILES
-for i = 1:4
+for i = 1:1
 	fprintf("\nFound .LAZ files for curve '%s':\n", curves{i}.name);
 	for j = 1:length(foundLazFiles{i})
 	fprintf("%s\n", foundLazFiles{i}{j}.lazName);
@@ -152,7 +152,7 @@ end
 
 %% PLOT KML CURVE AND FOUND FOOTPRINTS
 % plot(curves{2},"LineWidth",5,"EdgeColor","red")
-c = 10;
+c = 1;
 figure
 axis equal
 hold on
@@ -161,6 +161,67 @@ for i = 1:length(foundLazFiles{c})
 	plot(foundLazFiles{c}{i}.poly,"FaceAlpha",0.05);
 	pause(1)
 end
+hold off
+
+%% TESTING
+c = 1;
+h = 10; n = 1;
+ptCloud = cell(length(foundLazFiles{c}), 1);
+ptAttributes = cell(length(foundLazFiles{c}), 1);
+dataPP = dataPreprocessorCurve(curves{c}.poly, h, n);
+
+% TODO: dorobit vytvorenie cesty podla dvojcislia v kazdom nazve .LAZ suboru
+cd(MAIN_DIRECTORY);
+LOT_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
+cd(LOT_DIR);
+
+for i = 1:length(foundLazFiles{c}) % iteracie cez najdene .LAZ subory pre krivku "c"
+	tic
+	lasReader = lasFileReader(foundLazFiles{c}{i}.lazName);
+	[ptCloud{i}, ptAttributes{i}] = readPointCloud(lasReader,...
+									'Attributes', 'Classification');
+	time = toc;
+	fprintf(".LAZ %d loaded and read in %.f s\n", i, time);
+
+	dataPP = dataPP.filterPointCloud(ptCloud{i}, ptAttributes{i});
+	dataPP = dataPP.normalizePtCloud();
+
+	ptCloud{i} = dataPP.ptCloud_norm;
+	ptAttributes{i} = dataPP.ptAttributes_norm;
+end
+
+%%
+cd(MAIN_DIRECTORY)
+dataFE = dataFeatureExtractorCurve(curves{c}.poly, h, n, ptCloud, ptAttributes);
+
+% figure
+% title 'Feature extractor MESH'
+% dataFE.plotMesh();
+% axis equal
+
+[dataFE, timeFE] = dataFE.computeMetricRasters(0);
+[dataFE, time2] = dataFE.computeRepresentativeMetrics();
+
+representativeMetrics = dataFE.representativeMetrics;
+%%
+figure
+dataFE.plotMetricRaster("plotData","Hmax","plotMesh",1)
+colormap jet
+colorbar
+axis equal
+% axis xy
+
+%%
+p = 2;
+figure
+hold on
+classMember = ismember(ptAttributes{1}.Classification, [2 3 4 5]);
+colorData = reshape(label2rgb(ptAttributes{1}.Classification, colorMap, 'k'), [], 3);
+pcshow(ptCloud{1}.Location(classMember, :), colorData(classMember, :))
+
+classMember = ismember(ptAttributes{2}.Classification, [2 3 4 5]);
+colorData = reshape(label2rgb(ptAttributes{2}.Classification, colorMap, 'k'), [], 3);
+pcshow(ptCloud{2}.Location(classMember, :), colorData(classMember, :))
 hold off
 
 %%
@@ -218,9 +279,14 @@ y2 = ylim_new(2);
 nx = omega_width / h;
 ny = omega_height / h;
 
-xc = linspace(x1 + h/2, x2 - h/2, nx);
-yc = linspace(y1 + h/2, y2 - h/2, ny);
-[Xc, Yc] = meshgrid(xc, yc);
+% xc = linspace(x1 + h/2, x2 - h/2, nx);
+% yc = linspace(y1 + h/2, y2 - h/2, ny);
+% [Xc, Yc] = meshgrid(xc, yc);
+
+R = maprefcells([x1 x2], [y1 y2], [ny nx]);
+R.ProjectedCRS = projcrs(8353);
+
+[Xc, Yc] = R.worldGrid;
 
 % pomocne premenne pre vykreslenie mriezky
 X = x1:h:x2;
@@ -237,7 +303,7 @@ for i = 1:length(Y)
 end
 
 % najdenie tych pixelov, ktorych stredy lezia v kml krivke
-[XYin, XYon] = inpolygon(Xc, Yc, x, y);
+[XYin, XYon] = inpolygon(Xc(:), Yc(:), x, y);
 
 scatter(Xc(XYin), Yc(XYin),5, "*g")
 scatter(Xc(~XYin), Yc(~XYin),5, "*r")
@@ -249,5 +315,33 @@ legend('KML curve','\Omega', '\Omega discr')
 fprintf("In square for n = %.2f -> %d pixels\n", n, nnz(XYin))
 
 
+%%
+uniqueLaz = cell(1);
+uniqueLaz{1} = '';
+unique = 1;
+for i = 1:length(foundLazFiles)
+	for j = 1:length(foundLazFiles{i})
+		if (~ismember(foundLazFiles{i}{j}.lazName, uniqueLaz))
+			uniqueLaz{unique} = foundLazFiles{i}{j}.lazName;
+			unique = unique + 1;
+		end
+
+	end
+end
+
+uniqueLaz = uniqueLaz';
+
+%%
+TEST_DIR = fullfile(MAIN_DIRECTORY, "test/");
+
+for i = 1:length(uniqueLaz)
+	fprintf("file %d/%d\n", i, length(uniqueLaz));
+	if (isfile(uniqueLaz{i}))
+		copyfile(uniqueLaz{i}, fullfile(MAIN_DIRECTORY, "test/", uniqueLaz{i}))
+	end
+end
+
+%%
+isfile("las_colorm.txt")
 
 
