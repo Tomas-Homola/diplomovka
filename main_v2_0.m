@@ -60,10 +60,10 @@ for i = 1:numel(curves)
 
 	fprintf("Curve %d/%d loaded\n", i, numel(curves));
 end
-time = toc;
+lazTime = toc;
 clear h x y lat lon coords
 
-fprintf("All KML curves loaded in %.2f s.\n", time);
+fprintf("All KML curves loaded in %.2f s.\n", lazTime);
 %%
 % plot loaded curves
 figure
@@ -139,11 +139,11 @@ for i = 1:length(curves) % iterate through all .KML curves
 % 	end
 end % end i
 
-time = toc;
-fprintf("LAZ files for all curves found, elapsed time: %.2f s\n", time);
+lazTime = toc;
+fprintf("LAZ files for all curves found, elapsed time: %.2f s\n", lazTime);
 
 %% PRINT FOUND .LAZ FILES
-for i = 1:1
+for i = 1:length(foundLazFiles)
 	fprintf("\nFound .LAZ files for curve '%s':\n", curves{i}.name);
 	for j = 1:length(foundLazFiles{i})
 	fprintf("%s\n", foundLazFiles{i}{j}.lazName);
@@ -163,25 +163,29 @@ for i = 1:length(foundLazFiles{c})
 end
 hold off
 
-%% TESTING
-c = 1;
+%% VYPOCET METRIK
 h = 10; n = 1;
+LOT_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
+representativeMetrics = zeros(length(foundLazFiles), 88);
+logFile = fopen("log_mono.txt","w");
+
+for c = 1:length(curves)
+fprintf("\nStarted curve %d/%d\n", c, length(curves));
+curveStart = tic;
+
 ptCloud = cell(length(foundLazFiles{c}), 1);
 ptAttributes = cell(length(foundLazFiles{c}), 1);
 dataPP = dataPreprocessorCurve(curves{c}.poly, h, n);
 
-% TODO: dorobit vytvorenie cesty podla dvojcislia v kazdom nazve .LAZ suboru
-cd(MAIN_DIRECTORY);
-LOT_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
 cd(LOT_DIR);
 
 for i = 1:length(foundLazFiles{c}) % iteracie cez najdene .LAZ subory pre krivku "c"
-	tic
+	lazStart = tic;
 	lasReader = lasFileReader(foundLazFiles{c}{i}.lazName);
 	[ptCloud{i}, ptAttributes{i}] = readPointCloud(lasReader,...
 									'Attributes', 'Classification');
-	time = toc;
-	fprintf(".LAZ %d loaded and read in %.f s\n", i, time);
+	lazTime = toc(lazStart);
+	fprintf(".LAZ %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, lazTime);
 
 	dataPP = dataPP.filterPointCloud(ptCloud{i}, ptAttributes{i});
 	dataPP = dataPP.normalizePtCloud();
@@ -190,7 +194,6 @@ for i = 1:length(foundLazFiles{c}) % iteracie cez najdene .LAZ subory pre krivku
 	ptAttributes{i} = dataPP.ptAttributes_norm;
 end
 
-%%
 cd(MAIN_DIRECTORY)
 dataFE = dataFeatureExtractorCurve(curves{c}.poly, h, n, ptCloud, ptAttributes);
 
@@ -202,7 +205,19 @@ dataFE = dataFeatureExtractorCurve(curves{c}.poly, h, n, ptCloud, ptAttributes);
 [dataFE, timeFE] = dataFE.computeMetricRasters(0);
 [dataFE, time2] = dataFE.computeRepresentativeMetrics();
 
-representativeMetrics = dataFE.representativeMetrics;
+representativeMetrics(c,:) = dataFE.representativeMetrics;
+% writematrix(dataFE.representativeMetrics, "out_mono.csv",...
+% 	"Delimiter",";","WriteMode","append");
+
+curveTime = toc(curveStart);
+fprintf("Curve %d/%d done in %.2f s\n", c, length(curves), curveTime);
+fprintf(logFile,"Curve %s done in %.2f s\n", curves{c}.name, curveTime);
+end
+
+writematrix(representativeMetrics,"RM_curvesMono_inSVK.csv","Delimiter",";");
+
+fclose(logFile);
+
 %%
 figure
 dataFE.plotMetricRaster("plotData","Hmax","plotMesh",1)
@@ -332,16 +347,26 @@ end
 uniqueLaz = uniqueLaz';
 
 %%
-TEST_DIR = fullfile(MAIN_DIRECTORY, "test/");
+TEST_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
 
 for i = 1:length(uniqueLaz)
 	fprintf("file %d/%d\n", i, length(uniqueLaz));
 	if (isfile(uniqueLaz{i}))
-		copyfile(uniqueLaz{i}, fullfile(MAIN_DIRECTORY, "test/", uniqueLaz{i}))
+		copyfile(uniqueLaz{i}, fullfile(MAIN_DIRECTORY, "data/lazFiles", uniqueLaz{i}))
 	end
 end
 
 %%
-isfile("las_colorm.txt")
+for i = 1:length(uniqueLaz)
+	if (~isfile(uniqueLaz{i}))
+		fprintf(".LAZ %s not found\n", uniqueLaz{i})
+	end
+end
+fprintf("done\n");
+
+
+
+
+
 
 
