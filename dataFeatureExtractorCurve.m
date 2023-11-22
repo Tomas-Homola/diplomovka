@@ -120,30 +120,30 @@ classdef dataFeatureExtractorCurve
 			this.metricsRasters = struct;
 
 			this.plotTitles = struct;
-			this.plotTitles.Hmax        = 'Max of normalized height';
-			this.plotTitles.Hmean       = 'Mean of normalized height';
-			this.plotTitles.Hmedian     = 'Median of normalized height';
-			this.plotTitles.Hp25        = '25th percentile of normalized height';
-			this.plotTitles.Hp75	    = '75th percentile of normalized height';
-			this.plotTitles.Hp95        = '95th percentile of normalized height';
+			this.plotTitles.Hmax        = 'Max of normalized height'; % 1
+			this.plotTitles.Hmean       = 'Mean of normalized height'; % 2
+			this.plotTitles.Hmedian     = 'Median of normalized height'; % 3
+			this.plotTitles.Hp25        = '25th percentile of normalized height'; % 4
+			this.plotTitles.Hp75	    = '75th percentile of normalized height'; % 5
+			this.plotTitles.Hp95        = '95th percentile of normalized height'; % 6
 			
-			this.plotTitles.PPR         = 'Pulse penetration ratio';
-			this.plotTitles.DAM_z		= 'Number of returns above mean height';
-			this.plotTitles.BR_bellow_1 = 'Proportion of vegetation points bellow 1 m';
-			this.plotTitles.BR_1_2      = 'Proportion of vegetation points between 1 m - 2 m';
-			this.plotTitles.BR_2_3      = 'Proportion of vegetation points between 2 m - 3 m';
-			this.plotTitles.BR_above_3  = 'Proportion of vegetation points above 3 m';
-			this.plotTitles.BR_3_4      = 'Proportion of vegetation points between 3 m - 4 m';
-			this.plotTitles.BR_4_5      = 'Proportion of vegetation points between 4 m - 5 m';
-			this.plotTitles.BR_bellow_5 = 'Proportion of vegetation points bellow 5 m';
-			this.plotTitles.BR_5_20     = 'Proportion of vegetation points between 5 m - 20 m';
-			this.plotTitles.BR_above_20 = 'Proportion of vegetation points above 20 m';
+			this.plotTitles.PPR         = 'Pulse penetration ratio'; % 7
+			this.plotTitles.DAM_z		= 'Number of returns above mean height'; % 8
+			this.plotTitles.BR_bellow_1 = 'Proportion of vegetation points bellow 1 m'; % 9
+			this.plotTitles.BR_1_2      = 'Proportion of vegetation points between 1 m - 2 m'; % 10
+			this.plotTitles.BR_2_3      = 'Proportion of vegetation points between 2 m - 3 m'; % 11
+			this.plotTitles.BR_above_3  = 'Proportion of vegetation points above 3 m'; % 12
+			this.plotTitles.BR_3_4      = 'Proportion of vegetation points between 3 m - 4 m'; % 13
+			this.plotTitles.BR_4_5      = 'Proportion of vegetation points between 4 m - 5 m'; % 14
+			this.plotTitles.BR_bellow_5 = 'Proportion of vegetation points bellow 5 m'; % 15
+			this.plotTitles.BR_5_20     = 'Proportion of vegetation points between 5 m - 20 m'; % 16
+			this.plotTitles.BR_above_20 = 'Proportion of vegetation points above 20 m'; % 17
 			
-			this.plotTitles.Coeff_var_z  = 'Coefficient of variation';
-			this.plotTitles.Hkurt        = 'Kurtosis of normalized height';
-			this.plotTitles.Hskew        = 'Skewness of normalized height';
-			this.plotTitles.Hstd         = 'Standard deviation of normalized height';
-			this.plotTitles.Hvar         = 'Variance of normalized height';
+			this.plotTitles.Coeff_var_z  = 'Coefficient of variation'; % 18
+			this.plotTitles.Hkurt        = 'Kurtosis of normalized height'; % 19
+			this.plotTitles.Hskew        = 'Skewness of normalized height'; % 20
+			this.plotTitles.Hstd         = 'Standard deviation of normalized height'; % 21
+			this.plotTitles.Hvar         = 'Variance of normalized height'; % 22
 
 			% initialize structure for export titles
 			this.exportTitles = struct;
