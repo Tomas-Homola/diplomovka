@@ -1,15 +1,39 @@
+clear
+clc
+
 %% Data import and prep
 [filePath,~,~] = fileparts(matlab.desktop.editor.getActiveFilename);
 cd(filePath);
 
-dataSent = readmatrix("112x72.csv");
-dataRM = readmatrix("RM_curves_rev2.3.csv");
-dataMono = readmatrix("RM_curvesMono_inSVK.csv");
+% sentinel data
+% dataSent = readmatrix("112x72.csv");
+dataSent = readmatrix("sent_rev2.3_112x72.csv");
+dataMonoSent = readmatrix("sent_mono_11x72.csv");
+
+% point cloud data
+% dataRM = readmatrix("RM_curves_rev2.3.csv");
+dataRM = readmatrix("RM_rev2.3_onlyVegHigh.csv");
+dataMonoRM = readmatrix("RM_mono_onlyVegHigh.csv");
+
 
 % 18 19 20 21
-selected = [index(18) index(19) index(20) index(21) index(22)];
+index = @(i) ((i-1)*4 + 1):1:(i*4);
 
-data = [dataSent dataRM(:, selected)];
+selected = [];
+metrics = [5 13 20];
+for i = metrics
+	selected = [ selected index(i) ];
+end
+
+% data = dataSent;
+data = dataRM(:, selected);
+% data = [dataSent dataRM(:, selected)];
+
+% dataMono = dataMonoSent;
+dataMono = dataMonoRM(:, selected);
+% dataMono = [dataMonoSent dataMonoRM(:, selected)];
+
+% dataScaled = (data - mean(data))./std(data);
 
 maxColumnValuesBeforePCA = max(data);
 minColumnValuesBeforePCA = min(data);
@@ -18,10 +42,13 @@ maxColumnValuesBeforePCA(maxColumnValuesBeforePCA == 0) = 1;
 dataNormed = (data - minColumnValuesBeforePCA) ./ (maxColumnValuesBeforePCA - minColumnValuesBeforePCA);
 dataNormed(:,maxColumnValuesBeforePCA == minColumnValuesBeforePCA) = 0;
 
+% dataNormed = data;
+
 % dataNormed2 = normalize(data, "range");
 
 % PCA
-[coef, score, ~, ~, ~, ~] = pca(dataNormed, "Algorithm","eig");
+[coef, score, ~, ~, explained, ~] = pca(dataNormed, "Algorithm","eig");
+fprintf("explained: %.2f\n", sum(explained(1:3)));
 
 maxColumnValuesAfterPCA = max(score);
 maxColumnValuesAfterPCA(maxColumnValuesAfterPCA == 0) = 1;
@@ -30,19 +57,22 @@ minColumnValuesAfterPCA = min(score);
 score = (score - minColumnValuesAfterPCA) ./ (maxColumnValuesAfterPCA - minColumnValuesAfterPCA);
 score(:,maxColumnValuesAfterPCA == minColumnValuesAfterPCA) = 0;
 
+% nove data z monokultur
+dataMonoNormed = (dataMono - minColumnValuesBeforePCA) ./ (maxColumnValuesBeforePCA - minColumnValuesBeforePCA);
+dataMonoNormed(:, maxColumnValuesBeforePCA == minColumnValuesBeforePCA) = 0;
 
-% dataMonoNormed = (dataMono - minColumnValuesBeforePCA) ./ (maxColumnValuesBeforePCA - minColumnValuesBeforePCA);
-% dataMonoNormed(:, maxColumnValuesBeforePCA == minColumnValuesBeforePCA) = 0;
-% 
-% % centrovanie novych bodov
+% dataMonoNormed = dataMono;
+
+% centrovanie novych bodov
 % dataMonoNormed = dataMonoNormed - mean(dataMonoNormed);
-% 
-% % PCA pre nove body
-% scoreMono = dataMonoNormed * coef;
-% 
-% % normovanie po PCA
-% scoreMono = (scoreMono - minColumnValuesAfterPCA) ./ (maxColumnValuesAfterPCA - minColumnValuesAfterPCA);
 
+% PCA pre nove body
+% [coefMono, scoreMono, ~, ~, ~, ~] = pca(dataMonoNormed, "Algorithm","eig");
+scoreMono = dataMonoNormed * coef;
+
+% normovanie po PCA
+scoreMono = (scoreMono - minColumnValuesAfterPCA) ./ (maxColumnValuesAfterPCA - minColumnValuesAfterPCA);
+% scoreMono = normalize(scoreMono,"range");
 
 n1 = 22;
 n2 = 28;
@@ -64,22 +94,33 @@ C4end = n1 + n2 + n3 + n4;
 C5end = n1 + n2 + n3 + n4 + n5;
 
 
+X = [score(:,1); scoreMono(:,1)];
+Y = [score(:,2); scoreMono(:,2)];
+Z = [score(:,3); scoreMono(:,3)];
 
-% X = [score(:,1); scoreMono(:,1)];
-% Y = [score(:,2); scoreMono(:,2)];
-
-X = score(:,1);
-Y = score(:,2);
+% X = score(:,1);
+% Y = score(:,2);
 
 figure
-scatter(X(C1start:C1end), Y(C1start:C1end), 20, "red", "filled");
+scatter(X(C1start:C1end), Y(C1start:C1end), 15, "red", "filled");
 hold on
-scatter(X(C2start:C2end), Y(C2start:C2end), 20, "green", "filled");
-scatter(X(C3start:C3end), Y(C3start:C3end), 20, "blue", "filled");
-scatter(X(C4start:C4end), Y(C4start:C4end), 20, "magenta", "filled");
-% scatter(X(C5start:C5end), Y(C5start:C5end), 20, "black", "filled");
+scatter(X(C2start:C2end), Y(C2start:C2end), 15, "green", "filled");
+scatter(X(C3start:C3end), Y(C3start:C3end), 15, "blue", "filled");
+scatter(X(C4start:C4end), Y(C4start:C4end), 15, "magenta", "filled");
+scatter(X(C5start:C5end), Y(C5start:C5end), 50, "black", "*");
 hold off
-axis([-0.1 1.2 -0.1 1.2])
+% axis([-0.1 1.2 -0.1 1.2])
+legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
+
+figure
+scatter3(X(C1start:C1end), Y(C1start:C1end), Z(C1start:C1end), 15, "red", "filled");
+hold on
+scatter3(X(C2start:C2end), Y(C2start:C2end), Z(C2start:C2end), 15, "green", "filled");
+scatter3(X(C3start:C3end), Y(C3start:C3end), Z(C3start:C3end), 15, "blue", "filled");
+scatter3(X(C4start:C4end), Y(C4start:C4end), Z(C4start:C4end), 15, "magenta", "filled");
+scatter3(X(C5start:C5end), Y(C5start:C5end), Z(C5start:C5end), 50, "black", "*");
+hold off
+% axis([-0.1 1.2 -0.1 1.2])
 legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
 
 
