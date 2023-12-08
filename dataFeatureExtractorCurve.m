@@ -274,9 +274,10 @@ classdef dataFeatureExtractorCurve
 				% find all points belonging to pixel "i"
 				for j = 1:this.lasCount % iterate over all point clouds
 					% find vegetation points
-					isVegetation = this.ptAttributes{j}.Classification == this.VEG_LOW | ...
-								   this.ptAttributes{j}.Classification == this.VEG_MED | ...
-								   this.ptAttributes{j}.Classification == this.VEG_HIGH;
+% 					isVegetation = this.ptAttributes{j}.Classification == this.VEG_LOW | ...
+% 								   this.ptAttributes{j}.Classification == this.VEG_MED | ...
+% 								   this.ptAttributes{j}.Classification == this.VEG_HIGH;
+					isVegetation = this.ptAttributes{j}.Classification == this.VEG_HIGH;
 					% find points that belong to pixel "i"
 					isInPixel = this.ptCloud_pixels{j} == i;
 
