@@ -5,6 +5,7 @@
 !*.m
 !*.txt
 !*.kml
+!*csv
 
 # ...even if they are in subdirectories
 !*/
