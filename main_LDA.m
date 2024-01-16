@@ -135,6 +135,8 @@ confusionchart(class,predClass)
 
 %% Vypocet a vykreslenie projekcii
 classNames = ["91E0", "91F0","91G0","9110","Mono"];
+yLineType = ["r:","g:","b:","m:","k:"];
+
 figure("WindowState","maximized");
 tiledlayout(5, 4);
 
@@ -162,7 +164,7 @@ for i = 1:5
 		cmono = coords(coords(:,2) == 5, :);
 
 		nexttile
-		title("coeff(" + num2str(i) + "," + num2str(j) + ")","classes:" + classNames(i) + "--" + classNames(j))
+		title(classNames(i) + " ~ " + classNames(j), "coeff(" + num2str(i) + "," + num2str(j) + ")")
 		hold on
 		% vykreslenie projekcii
 		plot(c91E0(:,1), c91E0(:,2), 'r.')
@@ -170,19 +172,22 @@ for i = 1:5
 		plot(c91G0(:,1), c91G0(:,2), 'b.')
 		plot(c9110(:,1), c9110(:,2), 'm.')
 		plot(cmono(:,1), cmono(:,2), 'k.')
+		% horizontalne ciary na zvyraznenie tried
+		yline(i, yLineType(i))
+		yline(j, yLineType(j))
 		% decision boundary
 		xl = xline(DB,'--','DB');
 		xl.LabelVerticalAlignment = "middle";
 		xl.LabelHorizontalAlignment = "center";
 		hold off
-		% custom y ticks
+		% premenovanie tickov na y osi kvoli prehladnosti
 		yticks([1 2 3 4 5])
 		yticklabels({'91E0', '91F0','91G0','9110','Mono'})
 
 	end
 end
 
-legend("91E0", "91F0","91G0","9110","Mono")
+% legend("91E0", "91F0","91G0","9110","Mono")
 
 
 
