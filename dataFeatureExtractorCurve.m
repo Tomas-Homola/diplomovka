@@ -274,10 +274,11 @@ classdef dataFeatureExtractorCurve
 				% find all points belonging to pixel "i"
 				for j = 1:this.lasCount % iterate over all point clouds
 					% find vegetation points
-% 					isVegetation = this.ptAttributes{j}.Classification == this.VEG_LOW | ...
-% 								   this.ptAttributes{j}.Classification == this.VEG_MED | ...
-% 								   this.ptAttributes{j}.Classification == this.VEG_HIGH;
-					isVegetation = this.ptAttributes{j}.Classification == this.VEG_HIGH;
+					isVegetation = this.ptAttributes{j}.Classification == this.VEG_LOW | ...
+								   this.ptAttributes{j}.Classification == this.VEG_MED | ...
+								   this.ptAttributes{j}.Classification == this.VEG_HIGH;
+% 					isVegetation = this.ptAttributes{j}.Classification == this.VEG_HIGH;
+					
 					% find points that belong to pixel "i"
 					isInPixel = this.ptCloud_pixels{j} == i;
 
@@ -303,6 +304,7 @@ classdef dataFeatureExtractorCurve
 				
 				% if no points are found within pixel "i" -> continue to next pixel
 				if allPixelPoints == 0
+% 					fprintf("No points in pixel\n");
 					continue;
 				end
 				
@@ -341,6 +343,7 @@ classdef dataFeatureExtractorCurve
 				varZ     = var(Z);
 				stdZ     = std(Z);
 				coefVarZ = stdZ / meanZ;
+
 
 				% save metrics to appropriate rasters
 				this.metricsRasters.Hmax(i)     = maxZ;
@@ -396,10 +399,37 @@ classdef dataFeatureExtractorCurve
 
 				values = currentRaster(this.isPixelInCurve);
 
-				reprMetrics(1,i) = mean(values);
-				reprMetrics(2,i) = std(values);
+				reprMetrics(1,i) = mean(values, "omitnan");
+				reprMetrics(2,i) = std(values, "omitnan");
 				reprMetrics(3,i) = min(values);
 				reprMetrics(4,i) = max(values);
+			end
+
+			this.representativeMetrics = (reprMetrics(:))';
+			timePassed = toc;
+		end
+
+		function [this, timePassed] = computeRepresentativeMetrics_v2(this)
+			arguments
+				this dataFeatureExtractorCurve
+			end
+
+			rasterNames = fieldnames(this.metricsRasters);
+			reprMetrics = zeros(5, length(rasterNames));
+			currentRaster = [];
+			values = [];
+
+			tic
+			for i = 1:length(rasterNames)
+				currentRaster = this.metricsRasters.(rasterNames{i});
+
+				values = currentRaster(this.isPixelInCurve);
+
+				reprMetrics(1,i) = mean(values, "omitnan");
+				reprMetrics(2,i) = std(values, "omitnan");
+				reprMetrics(3,i) = min(values);
+				reprMetrics(4,i) = max(values);
+				reprMetrics(5,i) = median(values,"omitnan");
 			end
 
 			this.representativeMetrics = (reprMetrics(:))';
