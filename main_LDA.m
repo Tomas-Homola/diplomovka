@@ -21,8 +21,8 @@ dataSENTImono = readmatrix("mono_11x72_2018.csv");
 
 % lidar data
 % dataLIDAR = readmatrix("RM_curves_rev2.3.csv");
-dataLIDAR = readmatrix("RM_rev2.3_onlyVegHigh.csv");
-dataLIDARmono = readmatrix("RM_mono_onlyVegHigh.csv");
+dataLIDAR = readmatrix("repMetrics\RM_biotops_allVeg.csv");
+dataLIDARmono = readmatrix("repMetrics\RM_monoculture_allVeg.csv");
 
 NumOfLIDAR = size(dataLIDAR,2)/4; % number of lidar metrics
 NumOfSENTI = size(dataSENTI,2)/4; % number of sentinel metrics
@@ -33,7 +33,7 @@ metricsLIDAR = 1:NumOfLIDAR;
 % metricsLIDAR = 1:17;
 % metricsLIDAR = [];
 
-metricsSENTI  = 1:NumOfSENTI;
+% metricsSENTI  = 1:NumOfSENTI;
 metricsSENTI = [];
 
 % choose statistics
@@ -132,4 +132,60 @@ successRate = sum(diag(CM))/n * 100; % Total Success Rate:
 fprintf('Total Success Rate: %.2f %%\n', successRate);
 
 confusionchart(class,predClass)
+
+%% Vypocet a vykreslenie projekcii
+classNames = ["91E0", "91F0","91G0","9110","Mono"];
+figure("WindowState","maximized");
+tiledlayout(5, 4);
+
+for i = 1:5
+	for j = 1:5
+		if (i == j)
+			continue
+		end
+
+		a = LDAcls.Coeffs(i,j).Linear;
+		c0 = LDAcls.Coeffs(i,j).Const;
+
+		n = a / norm(a);
+		DB = -c0 / norm(a);
+
+		% vypocet projekcii
+		dotProducts = sum(data' .* n)';
+
+		coords = [dotProducts, class];
+
+		c91E0 = coords(coords(:,2) == 1, :);
+		c91F0 = coords(coords(:,2) == 2, :);
+		c91G0 = coords(coords(:,2) == 3, :);
+		c9110 = coords(coords(:,2) == 4, :);
+		cmono = coords(coords(:,2) == 5, :);
+
+		nexttile
+		title("coeff(" + num2str(i) + "," + num2str(j) + ")","classes:" + classNames(i) + "--" + classNames(j))
+		hold on
+		% vykreslenie projekcii
+		plot(c91E0(:,1), c91E0(:,2), 'r.')
+		plot(c91F0(:,1), c91F0(:,2), 'g.')
+		plot(c91G0(:,1), c91G0(:,2), 'b.')
+		plot(c9110(:,1), c9110(:,2), 'm.')
+		plot(cmono(:,1), cmono(:,2), 'k.')
+		% decision boundary
+		xl = xline(DB,'--','DB');
+		xl.LabelVerticalAlignment = "middle";
+		xl.LabelHorizontalAlignment = "center";
+		hold off
+		% custom y ticks
+		yticks([1 2 3 4 5])
+		yticklabels({'91E0', '91F0','91G0','9110','Mono'})
+
+	end
+end
+
+legend("91E0", "91F0","91G0","9110","Mono")
+
+
+
+
+
 
