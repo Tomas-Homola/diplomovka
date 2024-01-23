@@ -161,14 +161,18 @@ for i = 1:length(foundLazFiles{c})
 	plot(foundLazFiles{c}{i}.poly,"FaceAlpha",0.05);
 	pause(1)
 end
+plot(curves{c}.poly,"LineWidth",5,"EdgeColor","red","FaceAlpha",0)
 hold off
 
 %% VYPOCET METRIK
+cd(MAIN_DIRECTORY);
 h = 10; n = 1;
 LOT_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
-representativeMetrics = zeros(length(foundLazFiles), 88);
-logFile = fopen("log_mono.txt","w");
+representativeMetrics = zeros(length(curves), 110); % 88 alebo 110, ak je aj median
+dataFE = cell(length(curves), 1);
+logFile = fopen("log_RMv2_monoculture_allVeg.txt", "w");
 
+totalTime = 0;
 for c = 1:length(curves)
 fprintf("\nStarted curve %d/%d\n", c, length(curves));
 curveStart = tic;
@@ -177,15 +181,39 @@ ptCloud = cell(length(foundLazFiles{c}), 1);
 ptAttributes = cell(length(foundLazFiles{c}), 1);
 dataPP = dataPreprocessorCurve(curves{c}.poly, h, n);
 
+% pomocne premenne pri nacitani PC cez .MAT subory
+ptCloud_i = [];
+ptAttributes_i = [];
+
 cd(LOT_DIR);
 
-for i = 1:length(foundLazFiles{c}) % iteracie cez najdene .LAZ subory pre krivku "c"
-	lazStart = tic;
-	lasReader = lasFileReader(foundLazFiles{c}{i}.lazName);
-	[ptCloud{i}, ptAttributes{i}] = readPointCloud(lasReader,...
-									'Attributes', 'Classification');
-	lazTime = toc(lazStart);
-	fprintf(".LAZ %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, lazTime);
+% for i = 1:length(foundLazFiles{c}) % iteracie cez najdene .LAZ subory pre krivku "c"
+% 	lazStart = tic;
+% 	lasReader = lasFileReader(foundLazFiles{c}{i}.lazName);
+% 	[ptCloud{i}, ptAttributes{i}] = readPointCloud(lasReader,...
+% 									'Attributes', 'Classification');
+% 	lazTime = toc(lazStart);
+% 	fprintf(".LAZ %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, lazTime);
+% 
+% 	dataPP = dataPP.filterPointCloud(ptCloud{i}, ptAttributes{i});
+% 	dataPP = dataPP.normalizePtCloud();
+% 
+% 	ptCloud{i} = dataPP.ptCloud_norm;
+% 	ptAttributes{i} = dataPP.ptAttributes_norm;
+% end
+
+for i = 1:length(foundLazFiles{c}) % nacitanie PC cez .MAT subory pre krivku "c"
+	matStart = tic;
+	load( strcat( foundLazFiles{c}{i}.lazName(1:end-3), 'mat' ) )
+	matTime = toc(matStart);
+	fprintf(".MAT %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, matTime);
+	fprintf(logFile, ".MAT %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, matTime);
+
+	ptCloud{i} = ptCloud_i;
+	ptAttributes{i} = ptAttributes_i;
+
+	ptCloud_i = [];
+	ptAttributes_i = [];
 
 	dataPP = dataPP.filterPointCloud(ptCloud{i}, ptAttributes{i});
 	dataPP = dataPP.normalizePtCloud();
@@ -195,26 +223,29 @@ for i = 1:length(foundLazFiles{c}) % iteracie cez najdene .LAZ subory pre krivku
 end
 
 cd(MAIN_DIRECTORY)
-dataFE = dataFeatureExtractorCurve(curves{c}.poly, h, n, ptCloud, ptAttributes);
+dataFE{c} = dataFeatureExtractorCurve(curves{c}.poly, h, n, ptCloud, ptAttributes);
 
 % figure
 % title 'Feature extractor MESH'
 % dataFE.plotMesh();
 % axis equal
 
-[dataFE, timeFE] = dataFE.computeMetricRasters(0);
-[dataFE, time2] = dataFE.computeRepresentativeMetrics();
+[dataFE{c}, timeFE] = dataFE{c}.computeMetricRasters(0);
+[dataFE{c}, time2]  = dataFE{c}.computeRepresentativeMetrics_v2();
 
-representativeMetrics(c,:) = dataFE.representativeMetrics;
-% writematrix(dataFE.representativeMetrics, "out_mono.csv",...
-% 	"Delimiter",";","WriteMode","append");
+representativeMetrics(c,:) = dataFE{c}.representativeMetrics;
 
 curveTime = toc(curveStart);
 fprintf("Curve %d/%d done in %.2f s\n", c, length(curves), curveTime);
-fprintf(logFile,"Curve %s done in %.2f s\n", curves{c}.name, curveTime);
+totalTime = totalTime + curveTime;
+fprintf(logFile,"\nCurve %s (%d/%d) done in %.2f s\n====================================================\n",...
+	curves{c}.name, c, length(curves), curveTime);
 end
 
-writematrix(representativeMetrics,"RM_curvesMono_inSVK.csv","Delimiter",";");
+fprintf("Computation done %.3f\n", totalTime);
+fprintf(logFile,"\nComputation done %.3f\n", totalTime);
+
+writematrix(representativeMetrics,"RMv2_monoculture_allVeg.csv","Delimiter",";");
 
 fclose(logFile);
 
@@ -224,7 +255,6 @@ dataFE.plotMetricRaster("plotData","Hmax","plotMesh",1)
 colormap jet
 colorbar
 axis equal
-% axis xy
 
 %%
 p = 2;
@@ -330,7 +360,7 @@ legend('KML curve','\Omega', '\Omega discr')
 fprintf("In square for n = %.2f -> %d pixels\n", n, nnz(XYin))
 
 
-%%
+%% Find all necessarry laz files for all curves
 uniqueLaz = cell(1);
 uniqueLaz{1} = '';
 unique = 1;
@@ -363,6 +393,31 @@ for i = 1:length(uniqueLaz)
 	end
 end
 fprintf("done\n");
+
+%%
+tic
+cd("lazFiles\")
+lasReader = lasFileReader("03_Bratislava_17_205026_5342423_a_c_jtsk03_bpv.laz");
+[ptCloud, ptAttributes] = readPointCloud(lasReader,...
+									'Attributes', 'Classification');
+
+cd("..")
+save("03_Bratislava_17_205026_5342423_a_c_jtsk03_bpv.mat", "ptCloud","ptAttributes");
+
+clear all
+load("03_Bratislava_17_205026_5342423_a_c_jtsk03_bpv.mat")
+
+time = toc;
+fprintf("Time needed: %.2f\n", time);
+
+%%
+temp = dir("*.m");
+
+names = cell(0);
+for i = 1:length(temp)
+	names{i} = temp(i).name;
+end
+names = names';
 
 
 
