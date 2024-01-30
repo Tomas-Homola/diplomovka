@@ -28,13 +28,13 @@ NumOfLIDAR = size(dataLIDAR,2)/4; % number of lidar metrics
 NumOfSENTI = size(dataSENTI,2)/4; % number of sentinel metrics
 
 % choose metrics
-% metricsLIDAR = 1:NumOfLIDAR;
+metricsLIDAR = 1:NumOfLIDAR;
 % metricsLIDAR = [5 13 20];
 % metricsLIDAR = 1:17;
-metricsLIDAR = [];
+% metricsLIDAR = [];
 
-metricsSENTI  = 1:NumOfSENTI;
-% metricsSENTI = [];
+% metricsSENTI  = 1:NumOfSENTI;
+metricsSENTI = [];
 
 % choose statistics
 statistics = [1,1,1,1]; % [mean, std, min, max]
@@ -130,7 +130,7 @@ if (PCA)
 	[coef, dataAfterPCA, ~, ~, explained, ~] = pca(dataScaled, "Algorithm","eig");
 
 	sum_explained = 0;
-	
+	% pouzit cumsum -> nnz()
 	for index = 1:length(explained)
 		sum_explained = sum_explained + explained(index);
 
@@ -179,7 +179,7 @@ confusionchart(class,predClass)
 classNames = ["91E0", "91F0","91G0","9110","Mono"];
 yLineType = ["r:","g:","b:","m:","k:"];
 
-figure("WindowState","maximized","Name","PCA: Lidar");
+figure("WindowState","maximized","Name","PCA: Lidar+Sentinel");
 tiledlayout(5, 4);
 
 c91E0 = cell(5, 4);
@@ -202,9 +202,9 @@ for i = 1:5
 
 		% vypocet projekcii
 		if (PCA)
-			dotProducts = sum(dataAfterPCA' .* normal)';
+			dotProducts = dataAfterPCA * normal;
 		else
-			dotProducts = sum(data' .* normal)';
+			dotProducts = data * normal;
 		end
 
 		coords = [dotProducts, class];
@@ -235,7 +235,7 @@ for i = 1:5
 		% premenovanie tickov na y osi kvoli prehladnosti
 		yticks([1 2 3 4 5])
 		yticklabels({'91E0', '91F0','91G0','9110','Mono'})
-		ylim([0.8, 5.2])
+		ylim([0.6, 5.4])
 
 	end
 end
@@ -257,7 +257,7 @@ figure("WindowState","maximized","Name","Projections 2D plots");
 tiledlayout(5, 4);
 
 % ciselna kombinacia pre dvojicu (9110, Mono) = (4, 5)
-xAxis_i = 4; xAxis_j = 1;
+xAxis_i = 4; xAxis_j = 5;
 
 for i = 1:5
 	for j = 1:5
@@ -292,19 +292,24 @@ W = zeros(size(X,2));
 for i = 1:NumOfClasses
 	Xi = X(class == i, :);
 
+	Xi = Xi - mean(Xi); % treba mat centrovane
+
 	W = W + Xi' * Xi;
 end
 
 W = W / (n - 1);
 
 % Sample Variance-Covariance matrix V = B + W
-V = (X' * X) / (n - 1);
+V = cov(X); % aj tu centrovane
+
+% Xc = X - mean(X);
+% V2 = (Xc' * Xc) / (n - 1);
 
 % Between-Class variance B = V - W
 B = V - W;
 
 % F-ratio -> B.u = rho*W.u - generalized eigenvalue problem
-[u, lambda] = eig(V\B);
+[u, lambda] = eig(B,W);
 u = u ./ vecnorm(u);
 norms = vecnorm(u);
 
@@ -329,6 +334,115 @@ scatter(X(113:123), Y(113:123), 50, "black", "*");
 hold off
 % axis([-0.1 1.2 -0.1 1.2])
 legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
+
+figure
+title 3D
+hold on
+scatter3(X(1:22),  Y(1:22), Z(1:22), 20, "red", "filled");
+scatter3(X(23:50), Y(23:50), Z(23:50), 20, "green", "filled");
+scatter3(X(51:81), Y(51:81), Z(51:81), 20, "blue", "filled");
+scatter3(X(82:112), Y(82:112),Z(82:112),  20, "magenta", "filled");
+scatter3(X(113:123), Y(113:123),Z(113:123), 50, "black", "*");
+hold off
+% axis([-0.1 1.2 -0.1 1.2])
+view(3)
+legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
+
+%%
+figure
+% imagesc(u_sorted(:,1:4))
+imagesc((u_sorted(:,1:4) - mean(u_sorted(:,1:4)) ./ std(u_sorted(:,1:4))))
+colorbar
+hold on
+for i = 1:21
+	yline(i*4 + 1,"LineWidth",1)
+end
+hold off
+% yline(7*4,"LineWidth",3)
+% yline(18*4,"LineWidth",3)
+% xline(7*2,"LineWidth",3)
+% xline(18*2,"LineWidth",3)
+
+%%
+dots = zeros(5,5);% 3,4
+n1 = LDAcls.Coeffs(1,2).Linear;
+n1 = n1 / norm(n1);
+for i = 1:5
+	for j = 1:5
+		if (i == j)
+			continue
+		end
+		n2 = LDAcls.Coeffs(i,j).Linear;
+		n2 = n2 / norm(n2);
+		dots(i,j) = dot(n1, n2);
+	end
+end
+
+dots
+
+%% 2,5 ~ 2,4, 3,4 ~ 2,4
+figure("WindowState","maximized","Name","Projections 2D plots");
+tiledlayout(5, 4);
+ind1 = [1 2];
+
+for i = 1:5
+	for j = 1:5
+		if (i == j)
+			continue
+		end
+
+		newCoords = zeros(n, 2);
+		ind2 = [i j];
+		for k = 1:n
+			newCoords(k,:) = proj(dataAfterPCA(k,:), ind1, ind2, LDAcls);
+		end
+
+		X = newCoords(:,1);
+		Y = newCoords(:,2);
+
+		nexttile
+		hold on
+		scatter(X(1:22),  Y(1:22), 20, "red", "filled");
+		scatter(X(23:50), Y(23:50), 20, "green", "filled");
+		scatter(X(51:81), Y(51:81), 20, "blue", "filled");
+		scatter(X(82:112), Y(82:112), 20, "magenta", "filled");
+		scatter(X(113:123), Y(113:123), 50, "black", "*");
+		hold off
+		% axis([-0.1 1.2 -0.1 1.2])
+% 		legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
+	end
+end
+
+%%
+function out = proj(x, ind1, ind2, model)
+	arguments
+		x
+		ind1
+		ind2
+		model ClassificationDiscriminant
+	end
+	
+	out = zeros(2,1);
+	n1 = model.Coeffs(ind1(1), ind1(2)).Linear;
+	n2 = model.Coeffs(ind2(1), ind2(2)).Linear;
+
+	n1 = n1 / norm(n1);
+	n2 = n2 / norm(n2);
+
+	X1 = dot(x, n1); X2 = dot(x, n2);
+	N12 = dot(n1, n2);
+
+% 	fprintf("n1.n2: %.4f\n", dot(n1, n2));
+
+	out(1) = ( X1 - X2 * N12 );
+	out(2) = ( X2 - X1 * N12 );
+
+	out = out' / (1 - N12 * N12);
+
+end
+
+
+
 
 
 
