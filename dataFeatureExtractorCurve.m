@@ -144,6 +144,7 @@ classdef dataFeatureExtractorCurve
 			this.plotTitles.Hskew        = 'Skewness of normalized height'; % 20
 			this.plotTitles.Hstd         = 'Standard deviation of normalized height'; % 21
 			this.plotTitles.Hvar         = 'Variance of normalized height'; % 22
+			this.plotTitles.Shannon      = 'Shannon index'; %23
 
 			% initialize structure for export titles
 			this.exportTitles = struct;
@@ -152,26 +153,27 @@ classdef dataFeatureExtractorCurve
 			this.exportTitles.Hmean       = '2_Hmean_';
 			this.exportTitles.Hmedian     = '3_Hmedian_';
 			this.exportTitles.Hp25        = '4_Hp25_';
-			this.exportTitles.Hp75	      = '6_HP75_';
-			this.exportTitles.Hp95        = '7_HP95_';
+			this.exportTitles.Hp75	      = '5_HP75_';
+			this.exportTitles.Hp95        = '6_HP95_';
 			
-			this.exportTitles.PPR         = '8_PPR_';
-			this.exportTitles.DAM_z		  = '9_Density_above_mean_z_';
-			this.exportTitles.BR_bellow_1 = '10_BR_bellow_1_';
-			this.exportTitles.BR_1_2      = '11_BR_1_2_';
-			this.exportTitles.BR_2_3      = '12_BR_2_3_';
-			this.exportTitles.BR_above_3  = '13_BR_above_3_';
-			this.exportTitles.BR_3_4      = '14_BR_3_4_';
-			this.exportTitles.BR_4_5      = '15_BR_4_5_';
-			this.exportTitles.BR_bellow_5 = '16_BR_bellow_5_';
-			this.exportTitles.BR_5_20     = '17_BR_5_20_';
-			this.exportTitles.BR_above_20 = '18_BR_above_20_';
+			this.exportTitles.PPR         = '7_PPR_';
+			this.exportTitles.DAM_z		  = '8_Density_above_mean_z_';
+			this.exportTitles.BR_bellow_1 = '9_BR_bellow_1_';
+			this.exportTitles.BR_1_2      = '10_BR_1_2_';
+			this.exportTitles.BR_2_3      = '11_BR_2_3_';
+			this.exportTitles.BR_above_3  = '12_BR_above_3_';
+			this.exportTitles.BR_3_4      = '13_BR_3_4_';
+			this.exportTitles.BR_4_5      = '14_BR_4_5_';
+			this.exportTitles.BR_bellow_5 = '15_BR_bellow_5_';
+			this.exportTitles.BR_5_20     = '16_BR_5_20_';
+			this.exportTitles.BR_above_20 = '17_BR_above_20_';
 			
-			this.exportTitles.Coeff_var_z  = '19_Coeff_var_z_';
-			this.exportTitles.Hkurt       = '21_Hkurt_';
-			this.exportTitles.Hskew       = '23_Hskew_';
-			this.exportTitles.Hstd        = '24_Hstd_';
-			this.exportTitles.Hvar        = '25_Hvar_';
+			this.exportTitles.Coeff_var_z  = '18_Coeff_var_z_';
+			this.exportTitles.Hkurt       = '19_Hkurt_';
+			this.exportTitles.Hskew       = '20_Hskew_';
+			this.exportTitles.Hstd        = '21_Hstd_';
+			this.exportTitles.Hvar        = '22_Hvar_';
+			this.exportTitles.Shannon	  = '23_Entropy_z_';
 
 		end
 
@@ -241,6 +243,7 @@ classdef dataFeatureExtractorCurve
 			this.metricsRasters.Hskew = NaN(this.ny, this.nx);
 			this.metricsRasters.Hstd = NaN(this.ny, this.nx);
 			this.metricsRasters.Hvar = NaN(this.ny, this.nx);
+			this.metricsRasters.Shannon = NaN(this.ny, this.nx);
 				
 			time = tic;
 
@@ -324,14 +327,14 @@ classdef dataFeatureExtractorCurve
 				PPR         = groundPoints / allPixelPoints;
 				DAM_z       = nnz(Z > meanZ);
 				BR_bellow_1 = nnz(Z < 1) / length(Z);
-				BR_1_2      = nnz (Z > 1 & Z < 2) / length(Z);
-				BR_2_3      = nnz (Z > 2 & Z < 3) / length(Z);
-				BR_above_3  = nnz (Z > 3) / length(Z);
-				BR_3_4      = nnz (Z > 3 & Z < 4) / length(Z);
-				BR_4_5      = nnz (Z > 4 & Z < 5) / length(Z);
-				BR_bellow_5 = nnz (Z < 5) / length(Z);
-				BR_5_20     = nnz (Z > 5 & Z < 20) / length(Z);
-				BR_above_20 = nnz (Z > 20) / length(Z);
+				BR_1_2      = nnz(Z > 1 & Z < 2) / length(Z);
+				BR_2_3      = nnz(Z > 2 & Z < 3) / length(Z);
+				BR_above_3  = nnz(Z > 3) / length(Z);
+				BR_3_4      = nnz(Z > 3 & Z < 4) / length(Z);
+				BR_4_5      = nnz(Z > 4 & Z < 5) / length(Z);
+				BR_bellow_5 = nnz(Z < 5) / length(Z);
+				BR_5_20     = nnz(Z > 5 & Z < 20) / length(Z);
+				BR_above_20 = nnz(Z > 20) / length(Z);
 
 				kurtZ    = kurtosis(Z);
 				skewZ    = skewness(Z);
@@ -343,6 +346,16 @@ classdef dataFeatureExtractorCurve
 				varZ     = var(Z);
 				stdZ     = std(Z);
 				coefVarZ = stdZ / meanZ;
+
+				shannon = 0; bounds = []; sum_p = 0;
+				for k = 0:0.5:maxZ
+					bounds = [k, k + 0.5];
+					p_i = nnz(Z >= bounds(1) & Z < bounds(2)) / length(Z);
+					sum_p = sum_p + p_i;
+					if (p_i ~= 0) % domain of log: x > 0
+						shannon = shannon - p_i * log(p_i);
+					end
+				end
 
 
 				% save metrics to appropriate rasters
@@ -370,6 +383,7 @@ classdef dataFeatureExtractorCurve
 				this.metricsRasters.Hskew(i)       = skewZ;
 				this.metricsRasters.Hstd(i)        = stdZ;
 				this.metricsRasters.Hvar(i)        = varZ;
+				this.metricsRasters.Shannon(i)	   = shannon;
 
 			end
 
@@ -442,7 +456,7 @@ classdef dataFeatureExtractorCurve
 				options.clipData (1,:) string {mustBeMember(options.clipData,{'Hmax', 'Hmean',...
 					'Hmedian','Hp25','Hp75', 'Hp95'...
 					'PPR','DAM_z','BR_bellow_1','BR_1_2','BR_2_3','BR_above_3','BR_3_4','BR_4_5','BR_bellow_5','BR_5_20','BR_above_20' ...
-					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
+					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar','Shannon'})}
 				options.percentile (1,1) {mustBeNumeric, mustBeInRange(options.percentile, 0, 100)} = 97.5
 			end
 			
@@ -462,7 +476,7 @@ classdef dataFeatureExtractorCurve
 				options.plotData (1,:) string {mustBeMember(options.plotData,["Hmax", "Hmean",...
 					"Hmedian","Hp25","Hp75", "Hp95"...
 					"PPR","DAM_z","BR_bellow_1","BR_1_2","BR_2_3","BR_above_3","BR_3_4","BR_4_5","BR_bellow_5","BR_5_20","BR_above_20" ...
-					"Coeff_var_z", "Hkurt", "Hskew", "Hstd", "Hvar"])}
+					"Coeff_var_z", "Hkurt", "Hskew", "Hstd", "Hvar", "Shannon"])}
 				options.clipPercentile (1,1) {mustBeNumeric, mustBeInRange(options.clipPercentile, 0, 100)} = 97.5
 				options.plotCurve logical = 0
 				options.plotMesh logical = 0
@@ -528,7 +542,7 @@ classdef dataFeatureExtractorCurve
 				options.exportLayer (1,:) string {mustBeMember(options.exportLayer,{'Hmax', 'Hmean',...
 					'Hmedian','Hp25','Hp75', 'Hp95'...
 					'PPR','DAM_z','BR_bellow_1','BR_1_2','BR_2_3','BR_above_3','BR_3_4','BR_4_5','BR_bellow_5','BR_5_20','BR_above_20' ...
-					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar'})}
+					'Coeff_var_z', 'Hkurt', 'Hskew', 'Hstd', 'Hvar', 'Shannon'})}
 			end
 
 			exportName = this.exportTitles.(options.exportLayer) + fileName;
