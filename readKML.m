@@ -1,6 +1,8 @@
 function coords = readKML(fileName)
 	if exist(fileName, 'file') ~= 2
-		error("File does not exist");
+		warning("File does not exist");
+		coords = [];
+		return;
 	end
 
 	% open file
