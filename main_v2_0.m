@@ -50,6 +50,9 @@ curves = cell(numel(KMLFiles), 1);
 
 for i = 1:numel(curves)
 	coords = readKML(KMLFilePath + KMLFiles(i));
+	if isempty(coords)
+		continue;
+	end
 	lon = coords(:,1)';
 	lat = coords(:,2)';
 	h = coords(:,3)';
@@ -159,7 +162,7 @@ hold on
 plot(curves{c}.poly,"LineWidth",5,"EdgeColor","red")
 for i = 1:length(foundLazFiles{c})
 	plot(foundLazFiles{c}{i}.poly,"FaceAlpha",0.05);
-	pause(1)
+	pause(0.5)
 end
 plot(curves{c}.poly,"LineWidth",5,"EdgeColor","red","FaceAlpha",0)
 hold off
@@ -168,9 +171,9 @@ hold off
 cd(MAIN_DIRECTORY);
 h = 10; n = 1;
 LOT_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
-representativeMetrics = zeros(length(curves), 110); % 88 alebo 110, ak je aj median
+representativeMetrics = zeros(length(curves), 92); % 88 alebo 110, ak je aj median
 dataFE = cell(length(curves), 1);
-logFile = fopen("log_RMv2_monoculture_allVeg.txt", "w");
+logFile = fopen("log_RM_biotops_allVeg_shannon.txt", "w");
 
 totalTime = 0;
 for c = 1:length(curves)
@@ -231,7 +234,7 @@ dataFE{c} = dataFeatureExtractorCurve(curves{c}.poly, h, n, ptCloud, ptAttribute
 % axis equal
 
 [dataFE{c}, timeFE] = dataFE{c}.computeMetricRasters(0);
-[dataFE{c}, time2]  = dataFE{c}.computeRepresentativeMetrics_v2();
+[dataFE{c}, time2]  = dataFE{c}.computeRepresentativeMetrics();
 
 representativeMetrics(c,:) = dataFE{c}.representativeMetrics;
 
@@ -245,13 +248,13 @@ end
 fprintf("Computation done %.3f\n", totalTime);
 fprintf(logFile,"\nComputation done %.3f\n", totalTime);
 
-writematrix(representativeMetrics,"RMv2_monoculture_allVeg.csv","Delimiter",";");
+writematrix(representativeMetrics,"RM_biotops_allVeg_shannon.csv","Delimiter",";");
 
 fclose(logFile);
 
 %%
 figure
-dataFE.plotMetricRaster("plotData","Hmax","plotMesh",1)
+dataFE{1}.plotMetricRaster("plotData","Shannon","plotMesh",1)
 colormap jet
 colorbar
 axis equal
@@ -377,6 +380,30 @@ end
 uniqueLaz = uniqueLaz';
 
 %%
+cd(LOT_DIR);
+%%
+missingFiles = cell(1);
+missingFiles{1} = '';
+found = 1;
+for i = 1:length(uniqueLaz)
+	if (~isfile(uniqueLaz{i})) % if laz not found
+		missingFiles{found} = uniqueLaz{i};
+		found = found + 1;
+	end
+end
+
+missingFiles = missingFiles';
+
+%%
+for i = 1:length(missingFiles)
+	fprintf("file %d/%d\n", i, length(missingFiles));
+	if (isfile(missingFiles{i}))
+		copyfile(missingFiles{i}, fullfile(MAIN_DIRECTORY, "data/lazFiles", missingFiles{i}))
+	else
+		fprintf("file %d not found\n", i);
+	end
+end
+%%
 TEST_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
 
 for i = 1:length(uniqueLaz)
@@ -419,7 +446,84 @@ for i = 1:length(temp)
 end
 names = names';
 
+%%
+trnava = [-535747, -1258481];
+figure;
+plotCurvesPolyshape(FOOTPRINTS_curves,"FaceAlpha", 0.3, "Incr", 5);
+hold on
+LOTS_curves{5}.poly.plot("EdgeColor","black", "LineWidth", 4, "LineStyle","-","FaceAlpha", 0);
+plot(trnava(1), trnava(2), "*",...
+	'MarkerSize',25,...
+    'MarkerEdgeColor','r',...
+    'MarkerFaceColor',[0.8,0,0],...
+	'LineWidth', 3)
+hold off
+axis equal
+set(gcf, "Position", [0 0 200 300])
 
+% 1258481 m	535747 m
+
+%%
+n = 100;
+xy = rand(n, 2) - 0.5;
+x = xy(:,1);
+y = xy(:,2);
+
+z1 = x + 2*y + 0.5;
+z2 = -(x).^2 - y.^2;
+z3 = sqrt(0.5 - x.^2 - y.^2);
+
+figure
+scatter3(x, y, z1,'filled', 'or')
+axis equal
+
+figure
+scatter3(x, y, z2,'filled','og')
+axis equal
+
+figure
+scatter3(x, y, z3,'filled','ob')
+axis equal
+
+xyz1 = [x,y,z1];
+xyz2 = [x,y,z2];
+xyz3 = [x,y,z3];
+
+cov1 = cov(xyz1);
+cov2 = cov(xyz2);
+cov3 = cov(xyz3);
+
+[u1, lambda1] = eig(cov1);
+[u2, lambda2] = eig(cov2);
+[u3, lambda3] = eig(cov3);
+
+lambda1 = sort(diag(lambda1),"descend");
+lambda2 = sort(diag(lambda2),"descend");
+lambda3 = sort(diag(lambda3),"descend");
+
+l1 = normalize(lambda1, 'norm', 1);
+l2 = normalize(lambda2, 'norm', 1);
+l3 = normalize(lambda3, 'norm', 1);
+
+curvature = [ l1(3) / sum(l1);
+			  l2(3) / sum(l2);
+			  l3(3) / sum(l3)
+			];
+
+linearity = [ (l1(1) - l1(2)) / l1(1);
+			  (l2(1) - l2(2)) / l2(1);
+			  (l3(1) - l3(2)) / l3(1)
+			];
+
+planarity = [ (l1(2) - l1(3)) / l1(1);
+			  (l2(2) - l2(3)) / l2(1);
+			  (l3(2) - l3(3)) / l3(1)
+			];
+
+sphericty = [ l1(3) / l1(1);
+			  l2(3) / l2(1);
+			  l3(3) / l3(1)
+			];
 
 
 
