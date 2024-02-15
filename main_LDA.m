@@ -24,6 +24,17 @@ dataSENTImono = readmatrix("mono_11x72_2018.csv");
 dataLIDAR = readmatrix("repMetrics\RM_biotops_allVeg.csv");
 dataLIDARmono = readmatrix("repMetrics\RM_monoculture_allVeg.csv");
 
+% lidar metrics names
+namesLIDAR = ["Hmax", "Hmean","Hmedian","Hp25","Hp75", "Hp95"...
+			  "PPR","DAM_z","BR_bellow_1","BR_1_2","BR_2_3","BR_above_3","BR_3_4","BR_4_5","BR_bellow_5","BR_5_20","BR_above_20" ...
+			  "Coeff_var_z", "Hkurt", "Hskew", "Hstd", "Hvar"];
+namesLIDAR = repelem(namesLIDAR, 4)';
+
+namesReprMetrics = ["_mean", "_std", "_min", "_max"]';
+namesReprMetrics = repmat(namesReprMetrics, 22, 1);
+
+namesLIDAR = namesLIDAR + namesReprMetrics;
+
 NumOfLIDAR = size(dataLIDAR,2)/4; % number of lidar metrics
 NumOfSENTI = size(dataSENTI,2)/4; % number of sentinel metrics
 
@@ -37,12 +48,14 @@ metricsLIDAR = 1:NumOfLIDAR;
 metricsSENTI = [];
 
 % choose statistics
-statistics = [1,1,1,1]; % [mean, std, min, max]
+statistics = [1,0,0,0]; % [mean, std, min, max]
 
 selectedLIDAR = statistics'*ismember(1:NumOfLIDAR,metricsLIDAR);
 selectedLIDAR = logical(selectedLIDAR(:));
 selectedSENTI = statistics'*ismember(1:NumOfSENTI,metricsSENTI);
 selectedSENTI = logical(selectedSENTI(:));
+
+selectedNamesLIDAR = namesLIDAR(selectedLIDAR);
 
 data = [dataSENTI(:, selectedSENTI), dataLIDAR(:, selectedLIDAR)];
 dataMono = [dataSENTImono(:, selectedSENTI) dataLIDARmono(:, selectedLIDAR)];
@@ -50,7 +63,7 @@ data = [data; dataMono];
 data = data(selectSamples,:);
 
 % choose if PCA should be used and what % of explained variance to take
-PCA = false;
+PCA = true;
 explainedThreshold = 99.9;
 
 %% Remove the variables with low variance
@@ -69,8 +82,11 @@ selectedVariables = selectedVariables & (CV >= CVThreshold); % columns with vari
 selectedVariables_id = find(selectedVariables);
 removedVariables_id = find(~selectedVariables);
 
-data = data(:, selectedVariables); % Select columns with sufficient variance
+fprintf("Removed variables:\n");
+selectedNamesLIDAR(~selectedVariables)
 
+data = data(:, selectedVariables); % Select columns with sufficient variance
+selectedNamesLIDAR = selectedNamesLIDAR(selectedVariables);
 % Using within class variance 
 % selectedVariables = true(1,nnz(selectedVariables));
 % for k = 1:NumOfClasses
@@ -87,23 +103,30 @@ data = data(:, selectedVariables); % Select columns with sufficient variance
 % data = data(:,selectedVariables);
 
 %% Plot data
-figure
-imagesc(data);
-% imagesc((data-mean(data))./std(data)); % standardized
-colorbar;
-title('2D Plot of all data');
+% figure
+% imagesc(data);
+% % imagesc((data-mean(data))./std(data)); % standardized
+% colorbar;
+% title('2D Plot of all data');
 
 sigma = cov((data-mean(data))./std(data)); % aby to bolo lepsie vidno na grafe
+% sigma = corr(data);
 % sigma = cov(data);
 % invSigma = inv(sigma);
 figure
 imagesc(sigma);
-yline(7*2,"LineWidth",3)
-yline(18*2,"LineWidth",3)
-xline(7*2,"LineWidth",3)
-xline(18*2,"LineWidth",3)
+yline(6*nnz(statistics)+0.5, "-k","LineWidth",3)
+yline(17*nnz(statistics)+0.5,"-k","LineWidth",3)
+xline(6*nnz(statistics)+0.5, "-k","LineWidth",3)
+xline(17*nnz(statistics)+0.5,"-k","LineWidth",3)
 colorbar;
 title('2D Plot of covariance matrx');
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+yticks(1:1:size(data,2))
+yticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+colormap("turbo")
 
 % Plot within class covariance matrices
 % for k = 1:NumOfClasses
@@ -348,6 +371,30 @@ hold off
 view(3)
 legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
 
+%% Prispevky
+
+%% CDA classification
+dsq = zeros(n,NumOfClasses);
+invW = inv(W);
+for k = 1:NumOfClasses
+    dataCenteredClass = data - classMean(k,:); % dorobit centroidy
+    dsq(:,k) = dot(dataCenteredClass,(invW*dataCenteredClass')',2);
+end
+
+[~,predClass] = min(dsq,[],2);
+
+% Success rate
+figure
+CM = confusionmat(class,predClass); % Confusion matrix
+
+format bank
+
+successRateClass = diag(CM)./nk' * 100 % Success rate for each class
+
+successRate = sum(diag(CM))/n * 100; % Total Success Rate:
+fprintf('Total Success Rate: %.2f %%\n')
+
+
 %%
 figure
 % imagesc(u_sorted(:,1:4))
@@ -365,7 +412,7 @@ hold off
 
 %%
 dots = zeros(5,5);% 3,4
-n1 = LDAcls.Coeffs(1,2).Linear;
+n1 = LDAcls.Coeffs(3,4).Linear;
 n1 = n1 / norm(n1);
 for i = 1:5
 	for j = 1:5
@@ -383,7 +430,7 @@ dots
 %% 2,5 ~ 2,4, 3,4 ~ 2,4
 figure("WindowState","maximized","Name","Projections 2D plots");
 tiledlayout(5, 4);
-ind1 = [1 2];
+ind1 = [3 4];
 
 for i = 1:5
 	for j = 1:5
@@ -408,6 +455,8 @@ for i = 1:5
 		scatter(X(82:112), Y(82:112), 20, "magenta", "filled");
 		scatter(X(113:123), Y(113:123), 50, "black", "*");
 		hold off
+		xlabel('3~4')
+		ylabel(num2str(i) + "~" + num2str(j))
 		% axis([-0.1 1.2 -0.1 1.2])
 % 		legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
 	end
