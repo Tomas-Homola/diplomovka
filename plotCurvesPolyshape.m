@@ -1,21 +1,15 @@
-function plotCurvesPolyshape(curves)
-	arguments
-		curves cell
-	end
+function plotCurvesPolyshape(curves, options)
+arguments
+	curves cell
+	options.FaceAlpha = 1
+	options.Incr = 1
+end
 
-	if (size(curves,2) == 2)
-		hold on
-		for i = 1:length(curves)
-			plot(curves{i}.poly);
-		end
-		hold off
-	else
-		hold on
-		for i = 1:length(curves)
-			plot(curves{i}.poly);
-		end
-		hold off
-	end
+hold on
+for i = 1:options.Incr:length(curves)
+	plot(curves{i}.poly,"FaceAlpha", options.FaceAlpha);
+end
+hold off
 
 end
 
