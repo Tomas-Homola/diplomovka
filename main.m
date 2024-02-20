@@ -111,8 +111,11 @@ featureExtractor = featureExtractor.meshPlane();
 % % % % [featureExtractor, time_2] = featureExtractor.computeMetricRastersParallel(6);
 
 %% Vykreslenie rezu PC
+% link na data: https://drive.google.com/drive/folders/19qIxhLV12pUuZ2WtuL5rIFoSAPfWDXJt?usp=sharing
+% bud vybrat DTM alebo podla vysledkov LiDAR metrik
+
 % H = flipud(DTM);
-H = flipud(featureExtractor.metricsRasters.Hskew);
+H = flipud(featureExtractor.metricsRasters.BR_2_3);
 figure
 Alpha = ones(size(H));
 Alpha(isnan(H)) = 0;
@@ -124,9 +127,9 @@ colormap jet
 colorbar
 A = ginput(1);
 hold on
-plot(A(1), A(2), '*k','MarkerSize',15)
+plot(A(1), A(2), 'ok','MarkerSize',10)
 B = ginput(1);
-plot([A(1), B(1)], [A(2), B(2)], '*-k', 'LineWidth', 4, 'MarkerSize',15)
+plot([A(1), B(1)], [A(2), B(2)], 'o-k', 'LineWidth', 3, 'MarkerSize',10)
 drawnow
 pause(0.5)
 hold off
