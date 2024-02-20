@@ -95,7 +95,7 @@ figure("Name","Original Point Cloud")
 preprocessor.plotPtCloud3D(colorMap, [2, 3, 5],"useData","original")
 %%
 figure("Name","Normalized Point Cloud")
-preprocessor.plotPtCloud3D(colorMap, [2, 3, 5],"useData","normalized")
+preprocessor.plotPtCloud3D(colorMap, [3 4 5],"useData","normalized")
 % handle.plotPtCloud3D(colorMap, [5],"useData","normalized")
 
 
@@ -115,7 +115,7 @@ featureExtractor = featureExtractor.meshPlane();
 % bud vybrat DTM alebo podla vysledkov LiDAR metrik
 
 % H = flipud(DTM);
-H = flipud(featureExtractor.metricsRasters.BR_2_3);
+H = flipud(featureExtractor.metricsRasters.Hmax);
 figure
 Alpha = ones(size(H));
 Alpha(isnan(H)) = 0;
@@ -134,13 +134,13 @@ drawnow
 pause(0.5)
 hold off
 
-k = (B(2) - A(2))/(B(1) - A(1));
-q = A(2) - k * A(1);
+s = B - A;
+a = -s(2);
+b =  s(1);
+c = - a*A(1) - b*A(2);
+d = @(X) abs(a*X(:,1) + b*X(:,2) + c)/sqrt(a*a + b*b);
 
-% fprintf("k: %.5f\nq: %.5f\n", k, q)
-d = @(X) abs(-k*X(:,1) + X(:,2) - q)/sqrt(k*k + 1);
-
-width = 5;
+width = 10;
 selectedClasses = [2 3 4 5 6 9];
 
 figure('Name', 'Point Cloud original')
@@ -155,7 +155,7 @@ for i = 1:lasCount
 	classMember = ismember(ptAttributes{i}.Classification, selectedClasses);
 		if any(classMember & selected)
 			pcshow(ptCloud{i}.Location(classMember & selected, :), colorData{i}(classMember & selected, :), ...
-				'MarkerSize', 20)
+				'MarkerSize', 20,'BackgroundColor','white')
 		end
 end
 hold off
@@ -176,7 +176,7 @@ for i = 1:lasCount
 		if any(classMember & selected)
 			colorData_i = reshape(label2rgb(att_n{i}.Classification, colorMap, 'k'), [], 3);
 			pcshow(PC_n{i}.Location(classMember & selected, :), colorData_i(classMember & selected, :), ...
-				'MarkerSize', 20)
+				'MarkerSize', 20,'BackgroundColor','white')
 		end
 end
 hold off
