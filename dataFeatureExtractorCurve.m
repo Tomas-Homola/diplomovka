@@ -180,31 +180,40 @@ classdef dataFeatureExtractorCurve
 		function plotMesh(this, options)
 			arguments
 				this 
-				options.Color = [0.3, 0.3, 0.3]
-				options.LineWidth (1,1) {mustBeNumeric} = 4
+				options.OmegaColor = [0.3, 0.3, 0.3]
+				options.GammaWidth (1,1) {mustBeNumeric} = 3
+				options.OmegaWidth (1,1) {mustBeNumeric} = 5
+				options.MarkerSize (1,1) {mustBeNumeric} = 15
 			end
 			
 			hold on
 			for i = 1:length(this.x) % oranzova = #EDB120
 				plot([this.x(i) this.x(i)],[this.y(1) this.y(end)],...
-					'Color', "black", 'LineWidth', 1,'LineStyle','-') %y grid lines
+					'Color', "black", 'LineWidth', 1,'LineStyle','-') % y grid lines
 			end
 
 			for i = 1:length(this.y)
 				plot([this.x(1) this.x(end)],[this.y(i) this.y(i)],...
-					'Color', "black", 'LineWidth', 1,'LineStyle','-') %x grid lines
+					'Color', "black", 'LineWidth', 1,'LineStyle','-') % x grid lines
 			end
-
-			plot(this.curve, "EdgeColor", "magenta", "FaceAlpha", 0, "LineWidth",2)
-			plot(this.Omega,"FaceAlpha",0,"LineStyle","-","LineWidth",2)
 
 			x_ = this.curve.Vertices(:,1);
 			y_ = this.curve.Vertices(:,2);
 			[XYin, ~] = inpolygon(this.Xc, this.Yc, x_ , y_);
 
-			scatter(this.Xc(XYin),  this.Yc(XYin), 13, "og","filled", "MarkerEdgeColor","black")
-			scatter(this.Xc(~XYin), this.Yc(~XYin),13, "or","filled", "MarkerEdgeColor","black")
+			% pixels inside the curve
+			scatter(this.Xc(XYin),  this.Yc(XYin),...
+				options.MarkerSize, "og","filled", "MarkerEdgeColor","black")
 			
+			% pixels outside the curve
+			scatter(this.Xc(~XYin), this.Yc(~XYin),...
+				options.MarkerSize, "or","filled", "MarkerEdgeColor","black")
+
+			% plot gamma and Omega
+			plot(this.curve, "EdgeColor", options.OmegaColor, "FaceAlpha", 0, "LineWidth",options.GammaWidth)
+			plot(this.Omega,"FaceAlpha",0,"LineStyle","-","LineWidth", options.OmegaWidth)
+
+
 			hold off
 			
 			
