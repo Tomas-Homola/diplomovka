@@ -27,11 +27,11 @@ dataLIDARmono = readmatrix("repMetrics\RM_monoculture_allVeg.csv");
 % lidar metrics names
 namesLIDAR = ["Hmax", "Hmean","Hmedian","Hp25","Hp75", "Hp95"...
 			  "PPR","DAM_z","BR_bellow_1","BR_1_2","BR_2_3","BR_above_3","BR_3_4","BR_4_5","BR_bellow_5","BR_5_20","BR_above_20" ...
-			  "Coeff_var_z", "Hkurt", "Hskew", "Hstd", "Hvar"];
+			  "Coeff_var_z", "Hkurt", "Hskew", "Hstd", "Hvar"]; %, "Shannon"
 namesLIDAR = repelem(namesLIDAR, 4)';
 
 namesReprMetrics = ["_mean", "_std", "_min", "_max"]';
-namesReprMetrics = repmat(namesReprMetrics, 22, 1);
+namesReprMetrics = repmat(namesReprMetrics, size(dataLIDAR,2)/4, 1);
 
 namesLIDAR = namesLIDAR + namesReprMetrics;
 
@@ -167,6 +167,40 @@ if (PCA)
 	dataAfterPCA = dataAfterPCA(:, 1:index);
 
 end
+%% Prispevky prediktorov #1
+coef2 = normalize(abs(coef), 'norm',1);
+sum(coef2)
+
+PC = 2;
+signs = sign(coef(:, PC));
+signs(signs == -1) = 0;
+colors = zeros(size(coef2,1), 3);
+for i = 1:size(coef2,1)
+	if signs(i)
+		colors(i,:) = [1.0 0.0 0.0];
+	else
+		colors(i,:) = [0.0 0.0 1.0];
+	end
+end
+
+figure
+bar(coef2(:, PC) * 100, "FaceColor","flat","CData", colors);
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+xline(6*nnz(statistics)+0.5, "-g","LineWidth",3)
+xline(17*nnz(statistics)+0.5,"-g","LineWidth",3)
+
+%%
+figure
+biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR);
+% hold on
+% scatter3(dataAfterPCA(class == 1, 1),dataAfterPCA(class == 1, 2),dataAfterPCA(class == 1, 3),"xr")
+% scatter3(dataAfterPCA(class == 2, 1),dataAfterPCA(class == 2, 2),dataAfterPCA(class == 2, 3),"xg")
+% scatter3(dataAfterPCA(class == 3, 1),dataAfterPCA(class == 3, 2),dataAfterPCA(class == 3, 3),"xb")
+% scatter3(dataAfterPCA(class == 4, 1),dataAfterPCA(class == 4, 2),dataAfterPCA(class == 4, 3),"xm")
+% scatter3(dataAfterPCA(class == 5, 1),dataAfterPCA(class == 5, 2),dataAfterPCA(class == 5, 3),"xk")
+% hold off
 
 %% LDA
 if (PCA)
@@ -371,7 +405,51 @@ hold off
 view(3)
 legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
 
+%% Prispevky jednotlivych prediktorov #2
+u_normed = normalize(abs(u_sorted),'norm', 1);
+
+temp = zeros(44, 44);
+
+for i = 1:29
+	for j = 1:29
+		temp(:,i) = temp(:,i) + u_normed(j, i) * coef2(:, j);
+	end
+end
+
+figure
+nn = 3;
+bar(temp(:,nn) * 100);
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+xline(6*nnz(statistics)+0.5, "-r","LineWidth",3)
+xline(17*nnz(statistics)+0.5,"-r","LineWidth",3)
+title("CDA " + num2str(nn))
 %% Prispevky
+temp = Xnew - mean(Xnew);
+Xnew = temp ./ max(temp);
+
+figure
+biplot(u_sorted(:,1:2),"VarLabels",selectedNamesLIDAR)
+hold on
+scatter(Xnew(class == 1, 1),Xnew(class == 1, 2),"xr")
+scatter(Xnew(class == 2, 1),Xnew(class == 2, 2),"xg")
+scatter(Xnew(class == 3, 1),Xnew(class == 3, 2),"xb")
+scatter(Xnew(class == 4, 1),Xnew(class == 4, 2),"xm")
+scatter(Xnew(class == 5, 1),Xnew(class == 5, 2),"xk")
+hold off
+set(gca,'LabelInterpreter','none')
+
+figure
+biplot(u_sorted(:,1:3),"VarLabels",selectedNamesLIDAR)
+hold on
+scatter3(Xnew(class == 1, 1),Xnew(class == 1, 2),Xnew(class == 1, 3),"xr")
+scatter3(Xnew(class == 2, 1),Xnew(class == 2, 2),Xnew(class == 2, 3),"xg")
+scatter3(Xnew(class == 3, 1),Xnew(class == 3, 2),Xnew(class == 3, 3),"xb")
+scatter3(Xnew(class == 4, 1),Xnew(class == 4, 2),Xnew(class == 4, 3),"xm")
+scatter3(Xnew(class == 5, 1),Xnew(class == 5, 2),Xnew(class == 5, 3),"xk")
+hold off
+set(gca,'LabelInterpreter','none')
 
 %% CDA classification
 dsq = zeros(n,NumOfClasses);
@@ -461,6 +539,27 @@ for i = 1:5
 % 		legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
 	end
 end
+
+%%
+temp = zeros(5, size(data,2));
+
+for i = 1:5
+	temp(i, :) = mean(data(class == i, :));
+end
+
+temp2 = abs(temp) ./ max(abs(temp));
+
+%%
+figure
+imagesc(temp2);
+xline(6*nnz(statistics)+0.5, "-k","LineWidth",3)
+xline(17*nnz(statistics)+0.5,"-k","LineWidth",3)
+colorbar;
+title('2D Plot of covariance matrx');
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+colormap("turbo")
 
 %%
 function out = proj(x, ind1, ind2, model)
