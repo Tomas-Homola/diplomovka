@@ -1,0 +1,24 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_cestounaTrikamennekopce_Limbach_final_s_0</name>
+			<ExtendedData>
+				<SimpleData name="code">unknown</SimpleData>
+				<SimpleData name="locTile">S2A_MSIL2A_20180910T095031_N0208_R079_T33UXP_20180910T143931</SimpleData>
+				<SimpleData name="segmType">initCurve</SimpleData>
+				<SimpleData name="paramSegm">unknown</SimpleData>
+			</ExtendedData>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.181354055800,48.312375155783,0
+					17.182297478182,48.312357251058,0
+					17.182270631268,48.311727939656,0
+					17.181327220470,48.311745843988,0
+					17.181354055800,48.312375155783,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

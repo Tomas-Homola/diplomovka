@@ -1,0 +1,24 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_stareDuby_Limbach2_final_s_0</name>
+			<ExtendedData>
+				<SimpleData name="code">unknown</SimpleData>
+				<SimpleData name="locTile">S2A_MSIL2A_20180910T095031_N0208_R079_T33UXP_20180910T143931</SimpleData>
+				<SimpleData name="segmType">initCurve</SimpleData>
+				<SimpleData name="paramSegm">unknown</SimpleData>
+			</ExtendedData>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.205744398495,48.299313318765,0
+					17.207226516519,48.299284870637,0
+					17.207183866804,48.298295966936,0
+					17.205701777363,48.298324414082,0
+					17.205744398495,48.299313318765,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

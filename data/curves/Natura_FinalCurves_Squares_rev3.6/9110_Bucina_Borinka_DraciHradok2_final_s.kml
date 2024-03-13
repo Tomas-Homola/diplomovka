@@ -1,0 +1,24 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>9110_Bucina_Borinka_DraciHradok2_final_s_0</name>
+			<ExtendedData>
+				<SimpleData name="code">unknown</SimpleData>
+				<SimpleData name="locTile">S2A_MSIL2A_20180910T095031_N0208_R079_T33UXP_20180910T143931</SimpleData>
+				<SimpleData name="segmType">initCurve</SimpleData>
+				<SimpleData name="paramSegm">unknown</SimpleData>
+			</ExtendedData>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.108093451028,48.256248284162,0
+					17.109574419178,48.256221112484,0
+					17.109533717033,48.255232137736,0
+					17.108052777405,48.255259308477,0
+					17.108093451028,48.256248284162,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

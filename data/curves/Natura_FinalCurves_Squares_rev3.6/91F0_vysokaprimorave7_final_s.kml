@@ -1,0 +1,24 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91F0_vysokaprimorave7_final_s_0</name>
+			<ExtendedData>
+				<SimpleData name="code">unknown</SimpleData>
+				<SimpleData name="locTile">S2A_MSIL2A_20180910T095031_N0208_R079_T33UXP_20180910T143931</SimpleData>
+				<SimpleData name="segmType">initCurve</SimpleData>
+				<SimpleData name="paramSegm">unknown</SimpleData>
+			</ExtendedData>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					16.855359328617,48.357415808545,0
+					16.856843453541,48.357391854813,0
+					16.856807498385,48.356402746280,0
+					16.855323402159,48.356426699185,0
+					16.855359328617,48.357415808545,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>

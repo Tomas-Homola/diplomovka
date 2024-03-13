@@ -1,0 +1,24 @@
+<kml>
+	<Folder>
+		<Placemark>
+			<name>91G0_Dubohrabina_kucizdorfskadolina_naddomami_Pezinok_final_s_0</name>
+			<ExtendedData>
+				<SimpleData name="code">unknown</SimpleData>
+				<SimpleData name="locTile">S2A_MSIL2A_20180910T095031_N0208_R079_T33UXP_20180910T143931</SimpleData>
+				<SimpleData name="segmType">initCurve</SimpleData>
+				<SimpleData name="paramSegm">unknown</SimpleData>
+			</ExtendedData>
+			<LinearRing>
+				<tessellate>0</tessellate>
+				<altitudeMode>clampToGround</altitudeMode>
+				<coordinates>
+					17.251313812939,48.332800298649,0
+					17.252796855197,48.332771248344,0
+					17.252753274216,48.331782381094,0
+					17.251270260589,48.331811430397,0
+					17.251313812939,48.332800298649,0
+				</coordinates>
+			</LinearRing>
+		</Placemark>
+	</Folder>
+</kml>
