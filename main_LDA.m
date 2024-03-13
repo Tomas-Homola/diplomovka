@@ -48,7 +48,7 @@ metricsLIDAR = 1:NumOfLIDAR;
 metricsSENTI = [];
 
 % choose statistics
-statistics = [1,0,0,0]; % [mean, std, min, max]
+statistics = [1,1,1,1]; % [mean, std, min, max]
 
 selectedLIDAR = statistics'*ismember(1:NumOfLIDAR,metricsLIDAR);
 selectedLIDAR = logical(selectedLIDAR(:));
@@ -83,10 +83,10 @@ selectedVariables_id = find(selectedVariables);
 removedVariables_id = find(~selectedVariables);
 
 fprintf("Removed variables:\n");
-selectedNamesLIDAR(~selectedVariables)
+% selectedNamesLIDAR(~selectedVariables)
 
 data = data(:, selectedVariables); % Select columns with sufficient variance
-selectedNamesLIDAR = selectedNamesLIDAR(selectedVariables);
+% selectedNamesLIDAR = selectedNamesLIDAR(selectedVariables);
 % Using within class variance 
 % selectedVariables = true(1,nnz(selectedVariables));
 % for k = 1:NumOfClasses
@@ -102,7 +102,7 @@ selectedNamesLIDAR = selectedNamesLIDAR(selectedVariables);
 % 
 % data = data(:,selectedVariables);
 
-%% Plot data
+%% Plot data correlation
 % figure
 % imagesc(data);
 % % imagesc((data-mean(data))./std(data)); % standardized
@@ -150,48 +150,46 @@ if (PCA)
 	dataScaled = (data - mean(data)) ./ std(data);
 	% 	dataScaled = zscore(data); % funkcia na standardizaciu
 
-	[coef, dataAfterPCA, ~, ~, explained, ~] = pca(dataScaled, "Algorithm","eig");
+	[coef, dataAfterPCA, variances, ~, explained, ~] = pca(dataScaled, "Algorithm","eig");
 
-	sum_explained = 0;
-	% pouzit cumsum -> nnz()
-	for index = 1:length(explained)
-		sum_explained = sum_explained + explained(index);
+	index = find(cumsum(explained) > explainedThreshold, 1);
 
-		if sum_explained > explainedThreshold
-			break;
-		end
-	end
-
-	fprintf("Found index %d\nexplained: %.3f\n", index, sum_explained);
+	fprintf("Found index %d\nexplained: %.3f\n", index, sum(explained(1:index)));
 
 	dataAfterPCA = dataAfterPCA(:, 1:index);
 
 end
-%% Prispevky prediktorov #1
+%% Prispevky prediktorov po PCA #1
 coef2 = normalize(abs(coef), 'norm',1);
-sum(coef2)
-
-PC = 2;
-signs = sign(coef(:, PC));
-signs(signs == -1) = 0;
-colors = zeros(size(coef2,1), 3);
-for i = 1:size(coef2,1)
-	if signs(i)
-		colors(i,:) = [1.0 0.0 0.0];
-	else
-		colors(i,:) = [0.0 0.0 1.0];
-	end
-end
 
 figure
-bar(coef2(:, PC) * 100, "FaceColor","flat","CData", colors);
+biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR);
+
+figure
+plotBarPCA(coef, 1)
 xticks(1:1:size(data,2))
 xticklabels(selectedNamesLIDAR)
 set(gca,'TickLabelInterpreter','none')
 xline(6*nnz(statistics)+0.5, "-g","LineWidth",3)
 xline(17*nnz(statistics)+0.5,"-g","LineWidth",3)
 
-%%
+figure
+plotBarPCA(coef, 2)
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+xline(6*nnz(statistics)+0.5, "-g","LineWidth",3)
+xline(17*nnz(statistics)+0.5,"-g","LineWidth",3)
+
+figure
+plotBarPCA(coef, 3)
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+xline(6*nnz(statistics)+0.5, "-g","LineWidth",3)
+xline(17*nnz(statistics)+0.5,"-g","LineWidth",3)
+
+%% Biplot pre PCA
 figure
 biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR);
 % hold on
@@ -202,7 +200,22 @@ biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR);
 % scatter3(dataAfterPCA(class == 5, 1),dataAfterPCA(class == 5, 2),dataAfterPCA(class == 5, 3),"xk")
 % hold off
 
-%% LDA
+%% Cross-validation
+rep = 200;
+accuracies = zeros(rep, 1);
+k = 5;
+
+for i = 1:rep
+	cv = cvpartition(n, "KFold", k);
+	LDAmodel = fitcdiscr(dataAfterPCA, class, 'CVPartition', cv, 'DiscrimType', 'linear');
+	error = kfoldLoss(LDAmodel);
+	accuracies(i) = (1 - error) * 100;
+end
+
+meanAccuracy = mean(accuracies);
+stdAccuracy = std(accuracies);
+
+%% LDA - fit model
 if (PCA)
 	LDAcls = fitcdiscr(dataAfterPCA, class, 'DiscrimType', 'linear');
 else
@@ -211,7 +224,7 @@ end
 
 % predClass = classify(data,data,class); % LDA using classify function
 
-%% Predict Classes
+%% LDA - Predict Classes
 if (PCA)
 	predClass = predict(LDAcls, dataAfterPCA);
 else
@@ -219,7 +232,7 @@ else
 end
 
 
-%% Success rate
+%% LDA - Success rate
 figure
 CM = confusionmat(class, predClass); % Confusion matrix
 
@@ -232,7 +245,7 @@ fprintf('Total Success Rate: %.2f %%\n', successRate);
 
 confusionchart(class,predClass)
 
-%% Vypocet a vykreslenie projekcii
+%% LDA - Vypocet a vykreslenie projekcii
 classNames = ["91E0", "91F0","91G0","9110","Mono"];
 yLineType = ["r:","g:","b:","m:","k:"];
 
@@ -310,33 +323,33 @@ end
 % -> iba sent. data: vsetko oddelene, najlepsie 9110~Mono
 % -> lidar+sentinel: zhoda, ze to nefunguje dobre kvoli malemu datasetu
 
-figure("WindowState","maximized","Name","Projections 2D plots");
-tiledlayout(5, 4);
+% figure("WindowState","maximized","Name","Projections 2D plots");
+% tiledlayout(5, 4);
+% 
+% % ciselna kombinacia pre dvojicu (9110, Mono) = (4, 5)
+% xAxis_i = 4; xAxis_j = 5;
+% 
+% for i = 1:5
+% 	for j = 1:5
+% 		if (i == j)
+% 			continue
+% 		end
+% 
+% 		nexttile
+% 		hold on
+% 		% vykreslenie projekcii
+% 		plot(c91E0{xAxis_i, xAxis_j}(:,1), c91E0{i,j}(:,1), 'r.', "MarkerSize", 15)
+% 		plot(c91F0{xAxis_i, xAxis_j}(:,1), c91F0{i,j}(:,1), 'g.', "MarkerSize", 15)
+% 		plot(c91G0{xAxis_i, xAxis_j}(:,1), c91G0{i,j}(:,1), 'b.', "MarkerSize", 15)
+% 		plot(c9110{xAxis_i, xAxis_j}(:,1), c9110{i,j}(:,1), 'm.', "MarkerSize", 15)
+% 		plot(cmono{xAxis_i, xAxis_j}(:,1), cmono{i,j}(:,1), 'k.', "MarkerSize", 15)
+% 		hold off
+% 		xlabel(classNames(xAxis_i) + " ~ " + classNames(xAxis_j), "FontWeight", "bold")
+% 		ylabel(classNames(i) + " ~ " + classNames(j), "FontWeight", "bold")
+% 	end
+% end
 
-% ciselna kombinacia pre dvojicu (9110, Mono) = (4, 5)
-xAxis_i = 4; xAxis_j = 5;
-
-for i = 1:5
-	for j = 1:5
-		if (i == j)
-			continue
-		end
-
-		nexttile
-		hold on
-		% vykreslenie projekcii
-		plot(c91E0{xAxis_i, xAxis_j}(:,1), c91E0{i,j}(:,1), 'r.', "MarkerSize", 15)
-		plot(c91F0{xAxis_i, xAxis_j}(:,1), c91F0{i,j}(:,1), 'g.', "MarkerSize", 15)
-		plot(c91G0{xAxis_i, xAxis_j}(:,1), c91G0{i,j}(:,1), 'b.', "MarkerSize", 15)
-		plot(c9110{xAxis_i, xAxis_j}(:,1), c9110{i,j}(:,1), 'm.', "MarkerSize", 15)
-		plot(cmono{xAxis_i, xAxis_j}(:,1), cmono{i,j}(:,1), 'k.', "MarkerSize", 15)
-		hold off
-		xlabel(classNames(xAxis_i) + " ~ " + classNames(xAxis_j), "FontWeight", "bold")
-		ylabel(classNames(i) + " ~ " + classNames(j), "FontWeight", "bold")
-	end
-end
-
-%% CDA
+%% CDA - vypocet matic V, W a B + vykreslenie
 if (PCA)
 	X = dataAfterPCA;
 else
@@ -406,19 +419,26 @@ view(3)
 legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
 
 %% Prispevky jednotlivych prediktorov #2
-u_normed = normalize(abs(u_sorted),'norm', 1);
-
-temp = zeros(44, 44);
-
-for i = 1:29
-	for j = 1:29
-		temp(:,i) = temp(:,i) + u_normed(j, i) * coef2(:, j);
-	end
-end
+% ževraj na znamienku prispevku nezáleží, stačí sa pozerať len na jeho veľkosť
+prispevky = coef(:, 1:index) * u_sorted;
+prispevky_normed = normalize(abs(prispevky), 'norm', 1);
 
 figure
-nn = 3;
-bar(temp(:,nn) * 100);
+biplot(prispevky(:, 1:2), "VarLabels", selectedNamesLIDAR);
+
+figure
+nn = 1;
+bar(prispevky_normed(:,nn) * 100);
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+xline(6*nnz(statistics)+0.5, "-r","LineWidth",3)
+xline(17*nnz(statistics)+0.5,"-r","LineWidth",3)
+title("CDA " + num2str(nn))
+
+figure
+nn = 2;
+bar(prispevky_normed(:,nn) * 100);
 xticks(1:1:size(data,2))
 xticklabels(selectedNamesLIDAR)
 set(gca,'TickLabelInterpreter','none')
@@ -426,36 +446,24 @@ xline(6*nnz(statistics)+0.5, "-r","LineWidth",3)
 xline(17*nnz(statistics)+0.5,"-r","LineWidth",3)
 title("CDA " + num2str(nn))
 %% Prispevky
-temp = Xnew - mean(Xnew);
+% temp = Xnew - mean(Xnew);
 Xnew = temp ./ max(temp);
-
+% temp_t = temp';
 figure
-biplot(u_sorted(:,1:2),"VarLabels",selectedNamesLIDAR)
+biplot(temp(:,1:2),"VarLabels",selectedNamesLIDAR)
 hold on
-scatter(Xnew(class == 1, 1),Xnew(class == 1, 2),"xr")
-scatter(Xnew(class == 2, 1),Xnew(class == 2, 2),"xg")
-scatter(Xnew(class == 3, 1),Xnew(class == 3, 2),"xb")
-scatter(Xnew(class == 4, 1),Xnew(class == 4, 2),"xm")
-scatter(Xnew(class == 5, 1),Xnew(class == 5, 2),"xk")
+scatter(X(1:22),  Y(1:22), 20, "red", "filled");
+scatter(X(23:50), Y(23:50), 20, "green", "filled");
+scatter(X(51:81), Y(51:81), 20, "blue", "filled");
+scatter(X(82:112), Y(82:112), 20, "magenta", "filled");
+scatter(X(113:123), Y(113:123), 50, "black", "*");
 hold off
 set(gca,'LabelInterpreter','none')
-
-figure
-biplot(u_sorted(:,1:3),"VarLabels",selectedNamesLIDAR)
-hold on
-scatter3(Xnew(class == 1, 1),Xnew(class == 1, 2),Xnew(class == 1, 3),"xr")
-scatter3(Xnew(class == 2, 1),Xnew(class == 2, 2),Xnew(class == 2, 3),"xg")
-scatter3(Xnew(class == 3, 1),Xnew(class == 3, 2),Xnew(class == 3, 3),"xb")
-scatter3(Xnew(class == 4, 1),Xnew(class == 4, 2),Xnew(class == 4, 3),"xm")
-scatter3(Xnew(class == 5, 1),Xnew(class == 5, 2),Xnew(class == 5, 3),"xk")
-hold off
-set(gca,'LabelInterpreter','none')
-
 %% CDA classification
 dsq = zeros(n,NumOfClasses);
 invW = inv(W);
 for k = 1:NumOfClasses
-    dataCenteredClass = data - classMean(k,:); % dorobit centroidy
+    dataCenteredClass = data - classMean(k,:); % TODO: dorobit centroidy
     dsq(:,k) = dot(dataCenteredClass,(invW*dataCenteredClass')',2);
 end
 
@@ -470,7 +478,7 @@ format bank
 successRateClass = diag(CM)./nk' * 100 % Success rate for each class
 
 successRate = sum(diag(CM))/n * 100; % Total Success Rate:
-fprintf('Total Success Rate: %.2f %%\n')
+fprintf('Total Success Rate: %.2f %%\n', successRate);
 
 
 %%
@@ -488,7 +496,7 @@ hold off
 % xline(7*2,"LineWidth",3)
 % xline(18*2,"LineWidth",3)
 
-%%
+%% Zistenie uhlov pre normaly z LDA
 dots = zeros(5,5);% 3,4
 n1 = LDAcls.Coeffs(3,4).Linear;
 n1 = n1 / norm(n1);
@@ -505,7 +513,8 @@ end
 
 dots
 
-%% 2,5 ~ 2,4, 3,4 ~ 2,4
+%% LDA - vykreslenie cez projekcie na 2 vybrane normaly 
+% 2,5 ~ 2,4, 3,4 ~ 2,4
 figure("WindowState","maximized","Name","Projections 2D plots");
 tiledlayout(5, 4);
 ind1 = [3 4];
@@ -540,7 +549,7 @@ for i = 1:5
 	end
 end
 
-%%
+%% Vykreslenie primerov pre prediktory
 temp = zeros(5, size(data,2));
 
 for i = 1:5
@@ -548,8 +557,8 @@ for i = 1:5
 end
 
 temp2 = abs(temp) ./ max(abs(temp));
+% temp2 = normalize(temp, 'range');
 
-%%
 figure
 imagesc(temp2);
 xline(6*nnz(statistics)+0.5, "-k","LineWidth",3)
@@ -561,7 +570,7 @@ xticklabels(selectedNamesLIDAR)
 set(gca,'TickLabelInterpreter','none')
 colormap("turbo")
 
-%%
+%% Pomocne funkcie
 function out = proj(x, ind1, ind2, model)
 	arguments
 		x
@@ -589,7 +598,24 @@ function out = proj(x, ind1, ind2, model)
 
 end
 
+function plotBarPCA(coef, PC)
+	coef2 = normalize(abs(coef), 'norm',1);
 
+	% kod k farbam pre bar plot
+	signs = sign(coef(:, PC));
+	signs(signs == -1) = 0;
+	colors = zeros(size(coef2,1), 3);
+	for i = 1:size(coef2,1)
+		if signs(i)
+			colors(i,:) = [1.0 0.0 0.0];
+		else
+			colors(i,:) = [0.0 0.0 1.0];
+		end
+	end
+
+	bar(coef2(:, PC) * 100, "FaceColor","flat","CData", colors);
+	title("PC " + num2str(PC))
+end
 
 
 
