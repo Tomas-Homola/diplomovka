@@ -3,6 +3,7 @@
 # ... but these file types
 !.gitignore
 !*.m
+!*.mlapp
 !*.txt
 !*.kml
 !*csv
