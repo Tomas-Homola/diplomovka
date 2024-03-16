@@ -549,7 +549,7 @@ for i = 1:5
 	end
 end
 
-%% Vykreslenie primerov pre prediktory
+%% Vykreslenie priemerov pre prediktory
 temp = zeros(5, size(data,2));
 
 for i = 1:5
@@ -570,6 +570,14 @@ xticklabels(selectedNamesLIDAR)
 set(gca,'TickLabelInterpreter','none')
 colormap("turbo")
 
+%% ANOVA
+nn = 16;
+A = anova(class, data(:, nn));
+[pValue, ~] = anova1(data(:, nn), class, "off");
+
+figure
+boxchart(A)
+title(namesLIDAR(nn), 'Interpreter','none')
 %% Pomocne funkcie
 function out = proj(x, ind1, ind2, model)
 	arguments
