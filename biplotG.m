@@ -288,7 +288,7 @@ if ~ (isempty(labels) || (~iscell(labels) && isequal(labels, 0)))
     htxt = text(x, y, labels);
     set(htxt, ...
         'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', ...
-        'FontSize', 8, 'FontName', 'Helvetica', 'Color', color )
+        'FontSize', 8, 'FontName', 'Helvetica', 'Color', color,	'Interpreter', 'none' )
     hold off
 else
     htxt = [];
