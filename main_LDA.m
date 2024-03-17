@@ -215,6 +215,8 @@ end
 meanAccuracy = mean(accuracies);
 stdAccuracy = std(accuracies);
 
+fprintf("CV result accuracy: %.2f %% +- %.2f %%\n", meanAccuracy, stdAccuracy);
+
 %% LDA - fit model
 if (PCA)
 	LDAcls = fitcdiscr(dataAfterPCA, class, 'DiscrimType', 'linear');
@@ -424,7 +426,7 @@ prispevky = coef(:, 1:index) * u_sorted;
 prispevky_normed = normalize(abs(prispevky), 'norm', 1);
 
 figure
-biplot(prispevky(:, 1:2), "VarLabels", selectedNamesLIDAR);
+biplot(prispevky(:, 1:2), "VarLabels", namesLIDAR);
 
 figure
 nn = 1;
@@ -447,10 +449,10 @@ xline(17*nnz(statistics)+0.5,"-r","LineWidth",3)
 title("CDA " + num2str(nn))
 %% Prispevky
 % temp = Xnew - mean(Xnew);
-Xnew = temp ./ max(temp);
+% Xnew = temp ./ max(temp);
 % temp_t = temp';
 figure
-biplot(temp(:,1:2),"VarLabels",selectedNamesLIDAR)
+% biplot(prispevky(:,1:2),"VarLabels",selectedNamesLIDAR)
 hold on
 scatter(X(1:22),  Y(1:22), 20, "red", "filled");
 scatter(X(23:50), Y(23:50), 20, "green", "filled");
@@ -458,7 +460,16 @@ scatter(X(51:81), Y(51:81), 20, "blue", "filled");
 scatter(X(82:112), Y(82:112), 20, "magenta", "filled");
 scatter(X(113:123), Y(113:123), 50, "black", "*");
 hold off
-set(gca,'LabelInterpreter','none')
+% set(gca,'LabelInterpreter','none')
+
+%%
+Format = { {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'r'};...
+		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'g', 'MarkerEdgeColor', 'g'};...
+		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b'};...
+		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'm', 'MarkerEdgeColor', 'm'};...
+		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k'}};
+biplotG(prispevky, Xnew, 'Groups', class, 'VarLabels', namesLIDAR, 'Format', Format)
+
 %% CDA classification
 dsq = zeros(n,NumOfClasses);
 invW = inv(W);
