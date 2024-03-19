@@ -148,7 +148,7 @@ end
 
 % ANNOTATE
 % observations labels
-hobs = labelpoints(scores(:,1), scores(:,2), opts.obsLabels);
+% hobs = labelpoints(scores(:,1), scores(:,2), opts.obsLabels);
 % loadings labels
 hvars = labelpoints(loadings(:,1), loadings(:,2), opts.varLabels);
 
