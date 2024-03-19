@@ -171,9 +171,9 @@ hold off
 cd(MAIN_DIRECTORY);
 h = 10; n = 1;
 LOT_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
-representativeMetrics = zeros(length(curves), 92); % 88 alebo 110, ak je aj median
+representativeMetrics = zeros(length(curves), 92); % 92 alebo 115, ak je aj median
 dataFE = cell(length(curves), 1);
-logFile = fopen("log_RM_biotops_allVeg_shannon.txt", "w");
+% logFile = fopen("log_RM_biotops_allVeg_3.6.txt", "w");
 
 totalTime = 0;
 for c = 1:length(curves)
@@ -210,7 +210,7 @@ for i = 1:length(foundLazFiles{c}) % nacitanie PC cez .MAT subory pre krivku "c"
 	load( strcat( foundLazFiles{c}{i}.lazName(1:end-3), 'mat' ) )
 	matTime = toc(matStart);
 	fprintf(".MAT %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, matTime);
-	fprintf(logFile, ".MAT %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, matTime);
+% 	fprintf(logFile, ".MAT %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, matTime);
 
 	ptCloud{i} = ptCloud_i;
 	ptAttributes{i} = ptAttributes_i;
@@ -241,23 +241,77 @@ representativeMetrics(c,:) = dataFE{c}.representativeMetrics;
 curveTime = toc(curveStart);
 fprintf("Curve %d/%d done in %.2f s\n", c, length(curves), curveTime);
 totalTime = totalTime + curveTime;
-fprintf(logFile,"\nCurve %s (%d/%d) done in %.2f s\n====================================================\n",...
-	curves{c}.name, c, length(curves), curveTime);
+% fprintf(logFile,"\nCurve %s (%d/%d) done in %.2f s\n====================================================\n",...
+% 	curves{c}.name, c, length(curves), curveTime);
 end
 
 fprintf("Computation done %.3f\n", totalTime);
-fprintf(logFile,"\nComputation done %.3f\n", totalTime);
+% fprintf(logFile,"\nComputation done %.3f\n", totalTime);
 
-writematrix(representativeMetrics,"RM_biotops_allVeg_shannon.csv","Delimiter",";");
+% writematrix(representativeMetrics,"RM_biotops_allVeg_3.6.csv","Delimiter",";");
 
-fclose(logFile);
+% fclose(logFile);
 
 %%
 figure
-dataFE{1}.plotMetricRaster("plotData","Shannon","plotMesh",1)
+dataFE{1}.plotMetricRaster("plotData","BR_above_20","plotMesh",1)
 colormap jet
 colorbar
 axis equal
+
+%%
+figure
+dataFE{1}.plotPtCloud3D(colorMap, [2 3 4 5])
+
+%% Vykreslenie v reze
+H = flipud(dataFE{1}.metricsRasters.BR_above_20); %featureExtractor.metricsRasters.Hp25
+figure
+Alpha = dataFE{1}.alphaData;
+% Alpha(isnan(H)) = 0;
+imagesc([dataFE{1}.xc(1) dataFE{1}.xc(end)], [dataFE{1}.yc(end) dataFE{1}.yc(1)], ...
+		H, 'AlphaData', Alpha)
+set(gca,'YDir','normal') % spravne hodnoty na y osi
+% demcmap(H, 256);
+colormap jet
+colorbar
+A = ginput(1);
+hold on
+plot(A(1), A(2), 'ok','MarkerSize',10)
+B = ginput(1);
+plot([A(1), B(1)], [A(2), B(2)], 'o-k', 'LineWidth', 3, 'MarkerSize',10)
+drawnow
+pause(0.5)
+hold off
+
+s = B - A;
+a = -s(2);
+b =  s(1);
+c = - a*A(1) - b*A(2);
+d = @(X) abs(a*X(:,1) + b*X(:,2) + c)/sqrt(a*a + b*b);
+
+width = 5;
+selectedClasses = [2 3 4 5 6 9];
+
+PC_n = dataFE{1}.ptCloud;
+att_n = dataFE{1}.ptAttributes;
+
+figure('Name', 'Point Cloud normalized')
+title 'Point Cloud normalized'
+hold on
+for i = 1:dataFE{1}.lasCount
+	% normalized
+	xy = PC_n{i}.Location(:,1:2);
+	t = (xy - A) / (B - A);
+	selected = d(xy) < (width/2) & t <= 1 & t >= 0;
+	
+	classMember = ismember(att_n{i}.Classification, selectedClasses);
+		if any(classMember & selected)
+			colorData_i = reshape(label2rgb(att_n{i}.Classification, colorMap, 'k'), [], 3);
+			pcshow(PC_n{i}.Location(classMember & selected, :), colorData_i(classMember & selected, :), ...
+				'MarkerSize', 20,'BackgroundColor','white')
+		end
+end
+hold off
 
 %%
 p = 2;
@@ -379,8 +433,17 @@ end
 
 uniqueLaz = uniqueLaz';
 
-%%
-cd(LOT_DIR);
+%% Vykreslenie pre mesh
+curves{2} = curves{1};
+curves{2}.poly.Vertices(:,1) = curves{2}.poly.Vertices(:,1) + 220;
+
+dataFE1 = dataFeatureExtractorCurve(curves{1}.poly, 10, 0, {}, {});
+dataFE2 = dataFeatureExtractorCurve(curves{2}.poly, 10, 3, {}, {});
+figure
+dataFE1.plotMesh("MarkerSize",30, "OmegaWidth", 2, "OmegaColor", "blue");
+dataFE2.plotMesh("MarkerSize",30, "OmegaWidth", 2, "OmegaColor", "blue");
+axis equal
+
 %%
 missingFiles = cell(1);
 missingFiles{1} = '';
