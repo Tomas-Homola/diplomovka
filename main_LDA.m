@@ -66,6 +66,55 @@ data = data(selectSamples,:);
 PCA = true;
 explainedThreshold = 99.9;
 
+%% ANOVA
+pValues = zeros(1, size(data,2));
+for i = 1:size(data,2)
+	[pValues(i), ~] = anova1(data(:, i), class, "off");
+end
+
+% A = anova(class, data(:, nn));
+% [pValue, ~] = anova1(data(:, nn), class, "off");
+x = 1:1:size(data,2);
+
+alpha = 0.05;
+% The small p-value indicates that differences between column means are significant.
+passedANOVA = pValues < alpha; 
+figure
+plot(x(pValues < alpha), pValues(pValues < alpha), '.g', 'MarkerSize', 15)
+hold on
+plot(x(pValues >= alpha), pValues(pValues >= alpha), '.r', 'MarkerSize', 15)
+for i = 1:length(x) 
+	plot([x(i) x(i)], [0 pValues(i)], ':k')
+end
+xline(6*nnz(statistics)+0.5, "--k","LineWidth",1)
+xline(17*nnz(statistics)+0.5,"--k","LineWidth",1)
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+
+%% KS-test
+pValuesKS = zeros(1, size(data,2));
+for i = 1:size(data,2)
+	[~, pValuesKS(i)] = kstest((data(:, i) - mean(data(:, i))) ./ std(data(:, i)));
+end
+
+x = 1:1:size(data,2);
+
+alpha = 0.05;
+passedKS = pValuesKS > alpha; % Small values of p cast doubt on the validity of the null hypothesis.
+figure
+plot(x(pValuesKS < alpha), pValuesKS(pValuesKS < alpha), '.r', 'MarkerSize', 15)
+hold on
+plot(x(pValuesKS >= alpha), pValuesKS(pValuesKS >= alpha), '.g', 'MarkerSize', 15)
+for i = 1:length(x) 
+	plot([x(i) x(i)], [0 pValuesKS(i)], ':k')
+end
+xline(6*nnz(statistics)+0.5, "--k","LineWidth",1)
+xline(17*nnz(statistics)+0.5,"--k","LineWidth",1)
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+
 %% Remove the variables with low variance
 selectedVariables = true(1,size(data,2));
 CVThreshold = 1; % coefficient of variation threshold
@@ -76,17 +125,19 @@ means = mean(data);
 stds = std(data);
 CV = (stds ./ means) * 100; % Coefficient of variation for each column
 
-selectedVariables = selectedVariables & (stds > StdThreshold);
-selectedVariables = selectedVariables & (CV >= CVThreshold); % columns with variance above the threshold
+% selectedVariables = selectedVariables & (stds > StdThreshold);
+% selectedVariables = selectedVariables & (CV >= CVThreshold); % columns with variance above the threshold
+selectedVariables = selectedVariables & ~passedKS;
 
 selectedVariables_id = find(selectedVariables);
 removedVariables_id = find(~selectedVariables);
 
 fprintf("Removed variables:\n");
-% selectedNamesLIDAR(~selectedVariables)
+selectedNamesLIDAR(~selectedVariables)
 
 data = data(:, selectedVariables); % Select columns with sufficient variance
-% selectedNamesLIDAR = selectedNamesLIDAR(selectedVariables);
+selectedNamesLIDAR = selectedNamesLIDAR(selectedVariables);
+
 % Using within class variance 
 % selectedVariables = true(1,nnz(selectedVariables));
 % for k = 1:NumOfClasses
@@ -159,11 +210,34 @@ if (PCA)
 	dataAfterPCA = dataAfterPCA(:, 1:index);
 
 end
+
+%% Biplot pre PCA
+statisticsPCA = [1,1,1,1]; % [mean, std, min, max]
+
+plotCoef = statisticsPCA'*ismember(1:NumOfLIDAR,metricsLIDAR);
+plotCoef = logical(plotCoef(:));
+plotCoef = plotCoef(selectedVariables);
+
+figure
+% biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR)
+biplotG(coef(plotCoef, :), [], "VarLabels",selectedNamesLIDAR(plotCoef))
+
+maxlen = max(sqrt(coef(:,1).^2 + coef(:,2).^2));
+scores = dataAfterPCA./max(max(abs(dataAfterPCA)))*maxlen;
+hold on
+scatter3(scores(class == 1, 1), scores(class == 1, 2), scores(class == 1, 3),"or",'MarkerFaceColor', 'r')
+scatter3(scores(class == 2, 1), scores(class == 2, 2), scores(class == 2, 3),"og",'MarkerFaceColor', 'g')
+scatter3(scores(class == 3, 1), scores(class == 3, 2), scores(class == 3, 3),"ob",'MarkerFaceColor', 'b')
+scatter3(scores(class == 4, 1), scores(class == 4, 2), scores(class == 4, 3),"om",'MarkerFaceColor', 'm')
+scatter3(scores(class == 5, 1), scores(class == 5, 2), scores(class == 5, 3),"ok",'MarkerFaceColor', 'k')
+hold off
+% view(3)
+
 %% Prispevky prediktorov po PCA #1
 coef2 = normalize(abs(coef), 'norm',1);
 
-figure
-biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR);
+% figure
+% biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR);
 
 figure
 plotBarPCA(coef, 1)
@@ -189,17 +263,6 @@ set(gca,'TickLabelInterpreter','none')
 xline(6*nnz(statistics)+0.5, "-g","LineWidth",3)
 xline(17*nnz(statistics)+0.5,"-g","LineWidth",3)
 
-%% Biplot pre PCA
-figure
-biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR);
-% hold on
-% scatter3(dataAfterPCA(class == 1, 1),dataAfterPCA(class == 1, 2),dataAfterPCA(class == 1, 3),"xr")
-% scatter3(dataAfterPCA(class == 2, 1),dataAfterPCA(class == 2, 2),dataAfterPCA(class == 2, 3),"xg")
-% scatter3(dataAfterPCA(class == 3, 1),dataAfterPCA(class == 3, 2),dataAfterPCA(class == 3, 3),"xb")
-% scatter3(dataAfterPCA(class == 4, 1),dataAfterPCA(class == 4, 2),dataAfterPCA(class == 4, 3),"xm")
-% scatter3(dataAfterPCA(class == 5, 1),dataAfterPCA(class == 5, 2),dataAfterPCA(class == 5, 3),"xk")
-% hold off
-
 %% Cross-validation
 rep = 200;
 accuracies = zeros(rep, 1);
@@ -207,7 +270,11 @@ k = 5;
 
 for i = 1:rep
 	cv = cvpartition(n, "KFold", k);
-	LDAmodel = fitcdiscr(dataAfterPCA, class, 'CVPartition', cv, 'DiscrimType', 'linear');
+	if (PCA)
+		LDAmodel = fitcdiscr(dataAfterPCA, class, 'CVPartition', cv, 'DiscrimType', 'linear');
+	else
+		LDAmodel = fitcdiscr(data, class, 'CVPartition', cv, 'DiscrimType', 'linear');
+	end
 	error = kfoldLoss(LDAmodel);
 	accuracies(i) = (1 - error) * 100;
 end
@@ -357,7 +424,8 @@ if (PCA)
 else
 	X = data;
 end
-
+% X = data(:, passedANOVA);
+% nnz(passedANOVA)
 % Within-Class variance W
 Xi = [];
 W = zeros(size(X,2));
@@ -426,7 +494,7 @@ prispevky = coef(:, 1:index) * u_sorted;
 prispevky_normed = normalize(abs(prispevky), 'norm', 1);
 
 figure
-biplot(prispevky(:, 1:2), "VarLabels", namesLIDAR);
+biplot(prispevky(:, 1:2), "VarLabels", selectedNamesLIDAR);
 
 figure
 nn = 1;
@@ -447,28 +515,24 @@ set(gca,'TickLabelInterpreter','none')
 xline(6*nnz(statistics)+0.5, "-r","LineWidth",3)
 xline(17*nnz(statistics)+0.5,"-r","LineWidth",3)
 title("CDA " + num2str(nn))
-%% Prispevky
-% temp = Xnew - mean(Xnew);
-% Xnew = temp ./ max(temp);
-% temp_t = temp';
-figure
-% biplot(prispevky(:,1:2),"VarLabels",selectedNamesLIDAR)
-hold on
-scatter(X(1:22),  Y(1:22), 20, "red", "filled");
-scatter(X(23:50), Y(23:50), 20, "green", "filled");
-scatter(X(51:81), Y(51:81), 20, "blue", "filled");
-scatter(X(82:112), Y(82:112), 20, "magenta", "filled");
-scatter(X(113:123), Y(113:123), 50, "black", "*");
-hold off
-% set(gca,'LabelInterpreter','none')
 
-%%
+%% Biplot pre CDA
+statistics = [1,0,0,0]; % [mean, std, min, max]
+
+selectedLIDARpr = statistics'*ismember(1:NumOfLIDAR,metricsLIDAR);
+selectedLIDARpr = logical(selectedLIDARpr(:));
+selectedLIDARpr = selectedLIDARpr(selectedVariables);
+
 Format = { {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'r'};...
 		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'g', 'MarkerEdgeColor', 'g'};...
 		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b'};...
 		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'm', 'MarkerEdgeColor', 'm'};...
 		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k'}};
-biplotG(prispevky, Xnew, 'Groups', class, 'VarLabels', namesLIDAR, 'Format', Format)
+
+biplotG(prispevky(selectedLIDARpr,:), Xnew,...
+	'Groups', class,...
+	'VarLabels', selectedNamesLIDAR(selectedLIDARpr),...
+	'Format', Format)
 
 %% CDA classification
 dsq = zeros(n,NumOfClasses);
@@ -581,14 +645,6 @@ xticklabels(selectedNamesLIDAR)
 set(gca,'TickLabelInterpreter','none')
 colormap("turbo")
 
-%% ANOVA
-nn = 16;
-A = anova(class, data(:, nn));
-[pValue, ~] = anova1(data(:, nn), class, "off");
-
-figure
-boxchart(A)
-title(namesLIDAR(nn), 'Interpreter','none')
 %% Pomocne funkcie
 function out = proj(x, ind1, ind2, model)
 	arguments
