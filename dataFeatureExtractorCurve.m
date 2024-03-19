@@ -181,8 +181,8 @@ classdef dataFeatureExtractorCurve
 			arguments
 				this 
 				options.OmegaColor = [0.3, 0.3, 0.3]
-				options.GammaWidth (1,1) {mustBeNumeric} = 3
-				options.OmegaWidth (1,1) {mustBeNumeric} = 5
+				options.GammaWidth (1,1) {mustBeNumeric} = 2
+				options.OmegaWidth (1,1) {mustBeNumeric} = 3
 				options.MarkerSize (1,1) {mustBeNumeric} = 15
 			end
 			
@@ -218,6 +218,28 @@ classdef dataFeatureExtractorCurve
 			
 			
 		end % end of function plotMesh
+
+		function plotPtCloud3D(this, colorMap, selectedClasses, options)
+            arguments
+				this (1,1) dataFeatureExtractorCurve
+				colorMap (:, 3)
+				selectedClasses
+				options = []
+			end
+			
+			hold on
+			for i = 1:this.lasCount
+				classMember = ismember(this.ptAttributes{i}.Classification, selectedClasses);
+				if any(classMember)
+					colorData = reshape(label2rgb(this.ptAttributes{i}.Classification, colorMap, 'k'), [], 3);
+					pcshow(this.ptCloud{i}.Location(classMember, :), colorData(classMember, :))
+				else
+					warning('Nothing to plot in point cloud');
+				end
+			end
+			hold off
+			
+		end % end of plot point cloud 3D
 
 		function [this, timePassed] = computeMetricRasters(this, computeAllPixels)
 			arguments
