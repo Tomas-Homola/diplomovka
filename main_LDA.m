@@ -7,7 +7,7 @@ clc
 cd(filePath);
 
 selectedClasses = logical([1,1,1,1,1]); % [91E0,91F0,91G0,9110,Monokultura]
-nk = [22,28,31,31,11]; % number of samples in classes
+nk = [22,27,31,31,22]; % number of samples in classes, [22,28,31,31,11] pre rev2.3, [22,27,31,31,22] pre rev3.6
 selectSamples = repelem(selectedClasses, nk);
 nk = nk(selectedClasses);
 NumOfClasses = nnz(selectedClasses);
@@ -21,13 +21,13 @@ dataSENTImono = readmatrix("mono_11x72_2018.csv");
 
 % lidar data
 % dataLIDAR = readmatrix("RM_curves_rev2.3.csv");
-dataLIDAR = readmatrix("repMetrics\RM_biotops_allVeg.csv");
-dataLIDARmono = readmatrix("repMetrics\RM_monoculture_allVeg.csv");
+dataLIDAR = readmatrix("repMetrics\RM_biotops_allVeg_3.6.csv");
+dataLIDARmono = readmatrix("repMetrics\RM_monoculture_allVeg_3.6.csv");
 
 % lidar metrics names
 namesLIDAR = ["Hmax", "Hmean","Hmedian","Hp25","Hp75", "Hp95"...
 			  "PPR","DAM_z","BR_bellow_1","BR_1_2","BR_2_3","BR_above_3","BR_3_4","BR_4_5","BR_bellow_5","BR_5_20","BR_above_20" ...
-			  "Coeff_var_z", "Hkurt", "Hskew", "Hstd", "Hvar"]; %, "Shannon"
+			  "Coeff_var_z", "Hkurt", "Hskew", "Hstd", "Hvar", "Shannon"]; %, "Shannon"
 namesLIDAR = repelem(namesLIDAR, 4)';
 
 namesReprMetrics = ["_mean", "_std", "_min", "_max"]';
@@ -91,6 +91,31 @@ xline(17*nnz(statistics)+0.5,"--k","LineWidth",1)
 xticks(1:1:size(data,2))
 xticklabels(selectedNamesLIDAR)
 set(gca,'TickLabelInterpreter','none')
+xlim([min(x) - 2, max(x) + 2])
+
+%% SW-test
+pValuesSW = zeros(1, size(data,2));
+for i = 1:size(data,2)
+	[~, pValuesSW(i), ~] = swtest(data(:, i));
+end
+
+x = 1:1:size(data,2);
+
+alpha = 0.05;
+passedSW = pValuesSW > alpha; %
+figure
+plot(x(pValuesSW < alpha), pValuesSW(pValuesSW < alpha), '.r', 'MarkerSize', 15)
+hold on
+plot(x(pValuesSW >= alpha), pValuesSW(pValuesSW >= alpha), '.g', 'MarkerSize', 15)
+for i = 1:length(x) 
+	plot([x(i) x(i)], [0 pValuesSW(i)], ':k')
+end
+xline(6*nnz(statistics)+0.5, "--k","LineWidth",1)
+xline(17*nnz(statistics)+0.5,"--k","LineWidth",1)
+xticks(1:1:size(data,2))
+xticklabels(selectedNamesLIDAR)
+set(gca,'TickLabelInterpreter','none')
+xlim([min(x) - 2, max(x) + 2])
 
 %% KS-test
 pValuesKS = zeros(1, size(data,2));
@@ -114,7 +139,7 @@ xline(17*nnz(statistics)+0.5,"--k","LineWidth",1)
 xticks(1:1:size(data,2))
 xticklabels(selectedNamesLIDAR)
 set(gca,'TickLabelInterpreter','none')
-
+xlim([min(x) - 2, max(x) + 2])
 %% Remove the variables with low variance
 selectedVariables = true(1,size(data,2));
 CVThreshold = 1; % coefficient of variation threshold
@@ -127,7 +152,7 @@ CV = (stds ./ means) * 100; % Coefficient of variation for each column
 
 % selectedVariables = selectedVariables & (stds > StdThreshold);
 % selectedVariables = selectedVariables & (CV >= CVThreshold); % columns with variance above the threshold
-selectedVariables = selectedVariables & ~passedKS;
+selectedVariables = selectedVariables & passedSW;
 
 selectedVariables_id = find(selectedVariables);
 removedVariables_id = find(~selectedVariables);
@@ -211,6 +236,15 @@ if (PCA)
 
 end
 
+%%
+figure
+scree = explained ./ sum(explained);
+x = 1:1:10;
+plot(x, scree(1:10), '-o', 'MarkerFaceColor','auto','LineWidth',1.4)
+xlabel('Principal component')
+ylabel('Proportion of Variance Explained','Rotation',90)
+xlim([0.5, 10])
+
 %% Biplot pre PCA
 statisticsPCA = [1,1,1,1]; % [mean, std, min, max]
 
@@ -218,20 +252,28 @@ plotCoef = statisticsPCA'*ismember(1:NumOfLIDAR,metricsLIDAR);
 plotCoef = logical(plotCoef(:));
 plotCoef = plotCoef(selectedVariables);
 
+Format = { {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'r'};...
+		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'g', 'MarkerEdgeColor', 'g'};...
+		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b'};...
+		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'm', 'MarkerEdgeColor', 'm'};...
+		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k'}};
+
+
 figure
 % biplot(coef(:,1:2),"VarLabels",selectedNamesLIDAR)
-biplotG(coef(plotCoef, :), [], "VarLabels",selectedNamesLIDAR(plotCoef))
+biplotG(coef(plotCoef, :), dataAfterPCA, "VarLabels",selectedNamesLIDAR(plotCoef), 'Group', class, 'Format', Format)
 
-maxlen = max(sqrt(coef(:,1).^2 + coef(:,2).^2));
-scores = dataAfterPCA./max(max(abs(dataAfterPCA)))*maxlen;
-hold on
-scatter3(scores(class == 1, 1), scores(class == 1, 2), scores(class == 1, 3),"or",'MarkerFaceColor', 'r')
-scatter3(scores(class == 2, 1), scores(class == 2, 2), scores(class == 2, 3),"og",'MarkerFaceColor', 'g')
-scatter3(scores(class == 3, 1), scores(class == 3, 2), scores(class == 3, 3),"ob",'MarkerFaceColor', 'b')
-scatter3(scores(class == 4, 1), scores(class == 4, 2), scores(class == 4, 3),"om",'MarkerFaceColor', 'm')
-scatter3(scores(class == 5, 1), scores(class == 5, 2), scores(class == 5, 3),"ok",'MarkerFaceColor', 'k')
-hold off
-% view(3)
+% preskalovanie scores podla biplotu
+% maxlen = max(sqrt(coef(:,1).^2 + coef(:,2).^2));
+% scores = dataAfterPCA / max( max( abs( dataAfterPCA ) ) ) * maxlen;
+% hold on
+% scatter3(scores(class == 1, 1), scores(class == 1, 2), scores(class == 1, 3),"or",'MarkerFaceColor', 'r')
+% scatter3(scores(class == 2, 1), scores(class == 2, 2), scores(class == 2, 3),"og",'MarkerFaceColor', 'g')
+% scatter3(scores(class == 3, 1), scores(class == 3, 2), scores(class == 3, 3),"ob",'MarkerFaceColor', 'b')
+% scatter3(scores(class == 4, 1), scores(class == 4, 2), scores(class == 4, 3),"om",'MarkerFaceColor', 'm')
+% scatter3(scores(class == 5, 1), scores(class == 5, 2), scores(class == 5, 3),"ok",'MarkerFaceColor', 'k')
+% hold off
+% view(2)
 
 %% Prispevky prediktorov po PCA #1
 coef2 = normalize(abs(coef), 'norm',1);
@@ -466,11 +508,11 @@ Z = Xnew(:,3);
 
 figure
 hold on
-scatter(X(1:22),  Y(1:22), 20, "red", "filled");
-scatter(X(23:50), Y(23:50), 20, "green", "filled");
-scatter(X(51:81), Y(51:81), 20, "blue", "filled");
-scatter(X(82:112), Y(82:112), 20, "magenta", "filled");
-scatter(X(113:123), Y(113:123), 50, "black", "*");
+scatter(X(class == 1),  Y(class == 1), 20, "red", "filled");
+scatter(X(class == 2), Y(class == 2), 20, "green", "filled");
+scatter(X(class == 3), Y(class == 3), 20, "blue", "filled");
+scatter(X(class == 4), Y(class == 4), 20, "magenta", "filled");
+scatter(X(class == 5), Y(class == 5), 50, "black", "*");
 hold off
 % axis([-0.1 1.2 -0.1 1.2])
 legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
@@ -478,11 +520,11 @@ legend('91E0', '91F0', '91G0', '9110', 'Monokultura', 'Location','southeast')
 figure
 title 3D
 hold on
-scatter3(X(1:22),  Y(1:22), Z(1:22), 20, "red", "filled");
-scatter3(X(23:50), Y(23:50), Z(23:50), 20, "green", "filled");
-scatter3(X(51:81), Y(51:81), Z(51:81), 20, "blue", "filled");
-scatter3(X(82:112), Y(82:112),Z(82:112),  20, "magenta", "filled");
-scatter3(X(113:123), Y(113:123),Z(113:123), 50, "black", "*");
+scatter3(X(class == 1), Y(class == 1), Z(class == 1), 20, "red", "filled");
+scatter3(X(class == 2), Y(class == 2), Z(class == 2), 20, "green", "filled");
+scatter3(X(class == 3), Y(class == 3), Z(class == 3), 20, "blue", "filled");
+scatter3(X(class == 4), Y(class == 4), Z(class == 4),  20, "magenta", "filled");
+scatter3(X(class == 5), Y(class == 5), Z(class == 5), 50, "black", "*");
 hold off
 % axis([-0.1 1.2 -0.1 1.2])
 view(3)
@@ -529,6 +571,7 @@ Format = { {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'r', 'MarkerEdgeC
 		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'm', 'MarkerEdgeColor', 'm'};...
 		   {'Marker', 'o', 'MarkerSize', 8, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k'}};
 
+figure
 biplotG(prispevky(selectedLIDARpr,:), Xnew,...
 	'Groups', class,...
 	'VarLabels', selectedNamesLIDAR(selectedLIDARpr),...
