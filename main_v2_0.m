@@ -70,6 +70,7 @@ fprintf("All KML curves loaded in %.2f s.\n", lazTime);
 %%
 % plot loaded curves
 figure
+% plotCurvesPolyshape(LOTS_curves)
 plotCurvesPolyshape(curves)
 axis equal
 
@@ -173,7 +174,7 @@ h = 10; n = 1;
 LOT_DIR = fullfile(MAIN_DIRECTORY, "data/lazFiles");
 representativeMetrics = zeros(length(curves), 92); % 92 alebo 115, ak je aj median
 dataFE = cell(length(curves), 1);
-% logFile = fopen("log_RM_biotops_allVeg_3.6.txt", "w");
+logFile = fopen("log_RM_monooculture_allVeg_3.6.txt", "w");
 
 totalTime = 0;
 for c = 1:length(curves)
@@ -210,7 +211,7 @@ for i = 1:length(foundLazFiles{c}) % nacitanie PC cez .MAT subory pre krivku "c"
 	load( strcat( foundLazFiles{c}{i}.lazName(1:end-3), 'mat' ) )
 	matTime = toc(matStart);
 	fprintf(".MAT %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, matTime);
-% 	fprintf(logFile, ".MAT %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, matTime);
+	fprintf(logFile, ".MAT %d/%d for curve %d loaded in %.2f s\n", i, length(foundLazFiles{c}), c, matTime);
 
 	ptCloud{i} = ptCloud_i;
 	ptAttributes{i} = ptAttributes_i;
@@ -241,16 +242,16 @@ representativeMetrics(c,:) = dataFE{c}.representativeMetrics;
 curveTime = toc(curveStart);
 fprintf("Curve %d/%d done in %.2f s\n", c, length(curves), curveTime);
 totalTime = totalTime + curveTime;
-% fprintf(logFile,"\nCurve %s (%d/%d) done in %.2f s\n====================================================\n",...
-% 	curves{c}.name, c, length(curves), curveTime);
+fprintf(logFile,"\nCurve %s (%d/%d) done in %.2f s\n====================================================\n",...
+	curves{c}.name, c, length(curves), curveTime);
 end
 
 fprintf("Computation done %.3f\n", totalTime);
-% fprintf(logFile,"\nComputation done %.3f\n", totalTime);
+fprintf(logFile,"\nComputation done %.3f\n", totalTime);
 
-% writematrix(representativeMetrics,"RM_biotops_allVeg_3.6.csv","Delimiter",";");
+writematrix(representativeMetrics,"RM_monoculture_allVeg_3.6.csv","Delimiter",";");
 
-% fclose(logFile);
+fclose(logFile);
 
 %%
 figure
@@ -588,7 +589,33 @@ sphericty = [ l1(3) / l1(1);
 			  l3(3) / l3(1)
 			];
 
+%%
+% temp = sort(randi(40, 1, 20), 'ascend');
+n = length(temp);
+p = 0.95;
+j = floor(n * p);
 
+if (n*p == floor(n*p))
+	k_p = (temp(j) + temp(j + 1)) / 2;
+else
+	k_p = temp(j + 1);
+end
+clc
+fprintf("k_p: %.2f\nquantile: %.2f\nprctile: %.2f\n", k_p, quantile(temp, p), prctile(temp, p * 100));
+% fprintf("median: %.2f\n", median(temp));
+
+%%
+shannon = 0; bounds = []; sum_p = 0;
+for k = 0:0.5:max(temp)
+	bounds = [k, k + 0.5];
+	p_i = nnz(temp >= bounds(1) & temp < bounds(2)) / length(temp);
+	sum_p = sum_p + p_i;
+	if (p_i ~= 0) % domain of log: x > 0
+		shannon = shannon - p_i * log(p_i);
+	end
+end
+
+fprintf("Shannon -> %.4f\n", shannon);
 
 
 
